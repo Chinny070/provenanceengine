@@ -224,8 +224,18 @@ Claim: %s\nDeclared relationship: %s\nContent hash supplied: %s\nFetched text: %
         )
         try:
             # Current SDKs may decode JSON returned by the equivalence helper;
-            # older runners return the JSON string. Accept only either form.
-            result = json.loads(raw) if isinstance(raw, str) else raw
+            # older runners return text. Models sometimes wrap otherwise valid
+            # JSON in a single markdown fence, which we remove strictly.
+            if isinstance(raw, str):
+                payload = raw.strip()
+                if payload.startswith("```"):
+                    lines = payload.splitlines()
+                    if len(lines) < 3 or lines[0].strip().lower() != "```json" or lines[-1].strip() != "```":
+                        self._fail("malformed validator schema")
+                    payload = "\n".join(lines[1:-1]).strip()
+                result = json.loads(payload)
+            else:
+                result = raw
             if not isinstance(result, dict):
                 self._fail("malformed validator schema")
             decision = result["decision"]
