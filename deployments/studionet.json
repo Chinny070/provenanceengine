@@ -1,0 +1,18 @@
+{
+  "contract_name": "Provenance Engine",
+  "network": "studionet",
+  "chain_id": 61999,
+  "rpc": "https://studio.genlayer.com/api",
+  "contract_address": "0xF28617DeFdB0E3683440c8Fa7a82c54E52DA2536",
+  "deployment_transaction": "0x3012c3008010c5eb42e8fb36ef90e9048fe60519fefde1f1192f6a5138a7fdbf",
+  "source_file": "contracts/provenance_engine.py",
+  "source_sha256": "A75B16DA0ED3449D1036D36D5E6B4A9581B50BC7B49787B066E41B476FEF1C8E",
+  "verification": {
+    "method": "gen_getTransactionStatus",
+    "result": "FINALIZED",
+    "receipt_method": "eth_getTransactionReceipt",
+    "receipt_status": "0x1",
+    "receipt_recipient": "0xF28617DeFdB0E3683440c8Fa7a82c54E52DA2536",
+    "receipt_transaction_hash": "0x3012c3008010c5eb42e8fb36ef90e9048fe60519fefde1f1192f6a5138a7fdbf"
+  }
+}

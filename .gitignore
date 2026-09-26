@@ -3,3 +3,4 @@ __pycache__/
 .venv/
 *.pyc
 deployments/*.json
+!deployments/studionet.json
