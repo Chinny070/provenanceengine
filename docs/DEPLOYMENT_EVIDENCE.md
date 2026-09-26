@@ -1,6 +1,8 @@
-# Studionet deployment and live evidence
+# Historical Studionet deployment evidence
 
-The active Provenance Engine deployment runs on Studionet (chain ID `61999`) at [0xA77018a83C4d353eF31E07B59A2Ff50153e1264a](https://explorer-studio.genlayer.com/address/0xA77018a83C4d353eF31E07B59A2Ff50153e1264a). Its deployment transaction [0x6e2689f9e87aa273366766dbc255bf9046623143fb7657b7d88e8fe4a7786f07](https://explorer-studio.genlayer.com/tx/0x6e2689f9e87aa273366766dbc255bf9046623143fb7657b7d88e8fe4a7786f07) finalized with `MAJORITY_AGREE`. The deployed source is `contracts/provenance_engine.py`, SHA-256 `81B81B6E5CB57875236719D1A762791D94FA5C30C8ED0E24B92CC51C27AFBCF6`.
+> The transactions below prove behavior for the historical source SHA-256 `81B81B6E5CB57875236719D1A762791D94FA5C30C8ED0E24B92CC51C27AFBCF6` only. The current working tree has a different contract source hash, so this is not its canonical deployment evidence. A fresh deployment and live verification are still required.
+
+The historical contract was deployed on Studionet (chain ID `61999`) at [0xA77018a83C4d353eF31E07B59A2Ff50153e1264a](https://explorer-studio.genlayer.com/address/0xA77018a83C4d353eF31E07B59A2Ff50153e1264a). Its deployment transaction [0x6e2689f9e87aa273366766dbc255bf9046623143fb7657b7d88e8fe4a7786f07](https://explorer-studio.genlayer.com/tx/0x6e2689f9e87aa273366766dbc255bf9046623143fb7657b7d88e8fe4a7786f07) finalized with `MAJORITY_AGREE`. The deployed source was `contracts/provenance_engine.py`, SHA-256 `81B81B6E5CB57875236719D1A762791D94FA5C30C8ED0E24B92CC51C27AFBCF6`.
 
 ## Live claim and evidence lifecycle
 
