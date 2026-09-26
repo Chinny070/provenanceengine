@@ -39,4 +39,4 @@ genlayer network info
 genlayer deploy --contract contracts/provenance_engine.py
 ```
 
-Record the finalized transaction ID, contract address, and SHA-256 source hash in `deployments/studionet.json` (ignored by Git because it is generated evidence).
+The current Studionet deployment is [0xA77018a83C4d353eF31E07B59A2Ff50153e1264a](https://explorer-studio.genlayer.com/address/0xA77018a83C4d353eF31E07B59A2Ff50153e1264a). Its finalized deployment transaction, source hash, and live lifecycle and escrow results are recorded in [`deployments/studionet.json`](deployments/studionet.json) and [`docs/DEPLOYMENT_EVIDENCE.md`](docs/DEPLOYMENT_EVIDENCE.md).

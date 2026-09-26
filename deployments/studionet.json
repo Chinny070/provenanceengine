@@ -3,16 +3,42 @@
   "network": "studionet",
   "chain_id": 61999,
   "rpc": "https://studio.genlayer.com/api",
-  "contract_address": "0xF28617DeFdB0E3683440c8Fa7a82c54E52DA2536",
-  "deployment_transaction": "0x3012c3008010c5eb42e8fb36ef90e9048fe60519fefde1f1192f6a5138a7fdbf",
+  "contract_address": "0xA77018a83C4d353eF31E07B59A2Ff50153e1264a",
+  "deployment_transaction": "0x6e2689f9e87aa273366766dbc255bf9046623143fb7657b7d88e8fe4a7786f07",
   "source_file": "contracts/provenance_engine.py",
-  "source_sha256": "A75B16DA0ED3449D1036D36D5E6B4A9581B50BC7B49787B066E41B476FEF1C8E",
+  "source_sha256": "81B81B6E5CB57875236719D1A762791D94FA5C30C8ED0E24B92CC51C27AFBCF6",
+  "deployed_at": "2026-09-26",
+  "deployer": {
+    "account": "bradbury-e2e",
+    "address": "0x3A3168d67A110dE79461939047a8f7334ff1423d"
+  },
   "verification": {
-    "method": "gen_getTransactionStatus",
+    "method": "genlayer receipt",
     "result": "FINALIZED",
-    "receipt_method": "eth_getTransactionReceipt",
-    "receipt_status": "0x1",
-    "receipt_recipient": "0xF28617DeFdB0E3683440c8Fa7a82c54E52DA2536",
-    "receipt_transaction_hash": "0x3012c3008010c5eb42e8fb36ef90e9048fe60519fefde1f1192f6a5138a7fdbf"
-  }
+    "consensus_result": "MAJORITY_AGREE",
+    "receipt_transaction_hash": "0x6e2689f9e87aa273366766dbc255bf9046623143fb7657b7d88e8fe4a7786f07"
+  },
+  "live_tests": {
+    "claim_create": "0x97039aa56f4213b162312df1395339847b6ffaa69c972ab4cc137f9d8ed60275",
+    "evidence_submit": "0x3b7ad51d0647f10b46dfdf7bb4c3f1ca6086e972b7ee22681b0bca26578e38f4",
+    "consensus_verify": "0x36942f77e2737927002f2cbecb02f78ba30566f16caca137f8a2c2b8fa473445",
+    "confirmed_claim_bounty_deposit": "0x69c86ae417940079084cf1ab8374f0024508b678778ff252f1c17a08f182aafb",
+    "confirmed_claim_bounty_payout": "0xc6e6e1c43eb0088c2706979844c0d3413c10a5b3faed44893f356be7eb1b5307",
+    "confirmed_claim_payout_transfer": "0x2bc801cb1848c6cdc52d0867e27cf2c5aa75d3191982c7310050e060197fb470",
+    "replay_rejected": "0x1903ae77b28568d4f46716a191d2ab0e1dec4462fa51b02675d7067786fe99a0",
+    "refund_claim_create": "0xaf90e3597ea4a3b8546f816c732b6aa5c63fb306b0cb73de67844a0c9eed3aa3",
+    "refund_evidence_submit": "0xef806c19fc6daa55847705c0938767ac9fcb3af2cb4043cb746d51769c0dfb98",
+    "refund_claim_verify": "0x7784b1b234ee6d65f06374f916b82b049854ff109fd7aff58ae1f367a6e6f663",
+    "refund_bounty_deposit": "0xcacf92cb7261bf8a68b52dbe83e54a972fe6c60171e77e6e8f6d03a9bdbef450",
+    "refund_settlement": "0x5d873621702dc25c017cf0aba32416c04af6f6fa0186ab355486d29f8ebf8bd6",
+    "refund_transfer": "0xf92b7080c46412d7b3496d9200be8f44cc61f0e21cbc23dbf2105d555b4daae1"
+  },
+  "superseded_deployments": [
+    {
+      "contract_address": "0xF28617DeFdB0E3683440c8Fa7a82c54E52DA2536",
+      "deployment_transaction": "0x3012c3008010c5eb42e8fb36ef90e9048fe60519fefde1f1192f6a5138a7fdbf",
+      "source_sha256": "A75B16DA0ED3449D1036D36D5E6B4A9581B50BC7B49787B066E41B476FEF1C8E",
+      "reason": "Superseded after a live verify_claim transaction exposed fenced JSON output handling; corrected source is deployed at the current address."
+    }
+  ]
 }
