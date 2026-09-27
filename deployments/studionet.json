@@ -4,13 +4,13 @@
   "chain_id": 61999,
   "rpc": "https://studio.genlayer.com/api",
   "canonical_status": "DEPLOYED_LIVE_VALIDATION_INCOMPLETE",
-  "active_contract_address": "0xbC3fE4d84CE9b9E57c491494De62dbD999Ca4aC2",
-  "working_tree_source_sha256": "40A94B3192EBC5957620528714128D0295F4A81288E2AE8E33E1F354C41E4BEB",
+  "active_contract_address": "0x4512b07d637Fe42D278B25dd778a9a1a99A38Dbb",
+  "working_tree_source_sha256": "F945961C305652E41064CD119B3E015DCEBDC1F2CE17A19DB013F474D0F324B4",
   "last_deployed_source_matches_working_tree": true,
-  "contract_address": "0xbC3fE4d84CE9b9E57c491494De62dbD999Ca4aC2",
-  "deployment_transaction": "0xe15faf459e161b7ba5d7e76267dbfd33ab37261674e31d99333de5473190cdec",
+  "contract_address": "0x4512b07d637Fe42D278B25dd778a9a1a99A38Dbb",
+  "deployment_transaction": "0x809920a2feac4b4ce40d58dc27f9fde594d2eb485686446c6e306e3e0c395f97",
   "source_file": "contracts/provenance_engine.py",
-  "source_sha256": "40A94B3192EBC5957620528714128D0295F4A81288E2AE8E33E1F354C41E4BEB",
+  "source_sha256": "F945961C305652E41064CD119B3E015DCEBDC1F2CE17A19DB013F474D0F324B4",
   "deployed_at": "2026-09-27",
   "deployer": {
     "account": "my-studionet-wallet",
@@ -20,7 +20,7 @@
     "method": "genlayer receipt plus genlayer code readback",
     "result": "FINALIZED",
     "consensus_result": "MAJORITY_AGREE",
-    "receipt_transaction_hash": "0xe15faf459e161b7ba5d7e76267dbfd33ab37261674e31d99333de5473190cdec",
+    "receipt_transaction_hash": "0x809920a2feac4b4ce40d58dc27f9fde594d2eb485686446c6e306e3e0c395f97",
     "deployed_source_sha256_matches": true
   },
   "live_tests": {
@@ -39,7 +39,10 @@
     "contradiction_verify": "0xe19a382d2d6f94aa3901b89e7a71dd6ab48558efffdb967d815e9f792e8cfca3",
     "unavailable_claim_create": "0x160f3a9352e8f2451b19d9633413c5f38c39f896c71daeb49697529aff9196a7",
     "unavailable_evidence_submit": "0x9e75459db6796819214075b607b745576cd41cd57254bbb0a0c6c495104a7cc0",
-    "unavailable_verify_undetermined": "0x9db35843407d0bada4849a2ed4bb402dc53d80177ffc1b5ae03d2852d529cc92"
+    "unavailable_verify_undetermined": "0x9db35843407d0bada4849a2ed4bb402dc53d80177ffc1b5ae03d2852d529cc92",
+    "unavailable_claim_create_final": "0xf2ac4c41bffcd2b49f6798f47ac5f5385caf6645bac0d0f981b26ff5c8f743d6",
+    "unavailable_evidence_submit_final": "0x90badb04db1f61b88e678f8b235d1838ae3604d2d8b2ceb07531ba0214d860c7",
+    "unavailable_verify_final": "0x09ea074d085d82afb089f8dc96c24ae353a1e98ea8c40e050e16f3760137e3cb"
   },
   "superseded_deployments": [
     {
@@ -61,7 +64,7 @@
       "reason": "Superseded after a live verify_claim transaction exposed fenced JSON output handling; corrected source is deployed at the current address."
     }
   ],
-  "source_lines": 790,
+  "source_lines": 829,
   "live_observations": {
     "rendered_claim_status": "CONFIRMED",
     "pinned_text_history": "CONSENSUS_VERIFIED: SUPPORTS",
@@ -74,6 +77,6 @@
     "bounty_winner": "0xaffe15eec45b68835cc9e5b4ab85dd5deae8e70b",
     "replay_attempt": "FINALIZED MAJORITY_AGREE; validator execution receipts were ERROR after the bounty was already PAID.",
     "contradiction_claim_status": "CONTRADICTED",
-    "unavailable_source_result": "UNDETERMINED with MAJORITY_DISAGREE; no UNAVAILABLE state was confirmed."
+    "unavailable_source_result": "UNAVAILABLE; finalized consensus result and live get_status read recorded in docs/DEPLOYMENT_EVIDENCE.md."
   }
 }

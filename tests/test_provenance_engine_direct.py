@@ -116,8 +116,13 @@ def test_pinned_text_digest_mismatch_is_inconclusive_not_contradiction(direct_vm
         "evidence-1", "claim-1", URL, "SUPPORTS", "PINNED_TEXT", "0" * 64, "NONE",
     )
     contract.verify_claim("claim-1", "evidence-1")
+    evidence = contract.get_evidence("evidence-1")
+    assert evidence.expected_digest == "0" * 64
+    assert evidence.content_hash == hashlib.sha256(raw).hexdigest()
+    assert evidence.content_hash != evidence.expected_digest
+    assert evidence.observed_relationship == "INTEGRITY_MISMATCH"
     assert contract.get_status("claim-1") == "UNAVAILABLE"
-    assert contract.get_evidence("evidence-1").verification == "INTEGRITY_MISMATCH"
+    assert evidence.verification == "INTEGRITY_MISMATCH"
 
 
 def test_unimplemented_evidence_class_is_rejected(direct_vm, direct_deploy):
@@ -312,8 +317,13 @@ def test_arbitrary_challenge_cannot_clear_confirmation(direct_vm, direct_deploy)
     _create_claim(contract)
     _submit(contract)
     contract.verify_claim("claim-1", "evidence-1")
+    attacker = type(contract.owner)("0x3333333333333333333333333333333333333333")
+    direct_vm.sender = attacker
+    history_before = contract.get_history("claim-1")
     with direct_vm.expect_revert("challenge requires a verified conflicting finding"):
         contract.challenge_claim("claim-1", "evidence-1", "MATERIAL_CONFLICT")
+    assert int(contract.get_claim("claim-1").challenge_count) == 0
+    assert contract.get_history("claim-1") == history_before
     assert contract.get_status("claim-1") == "CONFIRMED", (
         contract.get_evidence("new"), contract.get_evidence("old"), contract.get_evidence_edges("claim-1")
     )
@@ -549,11 +559,17 @@ def test_unresolved_bounty_refunds_after_fixed_timeout(direct_vm, direct_deploy)
     contract = direct_deploy(CONTRACT)
     _create_claim(contract)
     _fund_bounty(direct_vm, contract)
+    attacker = type(contract.owner)("0x3333333333333333333333333333333333333333")
+    direct_vm.sender = attacker
     with direct_vm.expect_revert("bounty remains open"):
         contract.claim_reward("bounty-1")
+    assert contract.get_bounty("bounty-1").state == "OPEN"
     direct_vm.warp("2026-01-31T00:00:00Z")
     contract.claim_reward("bounty-1")
-    assert contract.get_bounty("bounty-1").state == "REFUNDED"
+    refunded = contract.get_bounty("bounty-1")
+    assert refunded.state == "REFUNDED"
+    assert str(refunded.winner).lower() == str(contract.owner).lower()
+    assert int(refunded.amount) == 0
 
 
 def test_stale_claim_and_settlement_both_refund(direct_vm, direct_deploy):
@@ -566,8 +582,14 @@ def test_stale_claim_and_settlement_both_refund(direct_vm, direct_deploy):
     _fund_bounty(direct_vm, contract)
     direct_vm.warp("2026-01-08T00:00:01Z")
     assert contract.get_status("claim-1") == "STALE"
+    attacker = type(contract.owner)("0x3333333333333333333333333333333333333333")
+    direct_vm.sender = attacker
     contract.claim_reward("bounty-1")
-    assert contract.get_bounty("bounty-1").state == "REFUNDED"
+    settled = contract.get_bounty("bounty-1")
+    assert settled.state == "REFUNDED"
+    assert str(settled.winner).lower() == str(contract.owner).lower()
+    assert settled.winning_evidence_id == ""
+    assert int(settled.amount) == 0
 
 
 def test_freshness_boundaries(direct_vm, direct_deploy):
