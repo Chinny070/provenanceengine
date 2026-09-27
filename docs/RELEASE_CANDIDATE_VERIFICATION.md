@@ -33,15 +33,15 @@
 | Substantive independent validator | PASS in Direct Mode | Live forged-leader tests require network-level validator receipts before release. |
 | Render-derived hashes and identity | PASS in Direct Mode; live confirmation observed | Stored live evidence detail read-back remains incomplete. |
 | Claim graph and deterministic state | PASS in Direct Mode | Live `SUPERSEDES`, `EXPIRES`, and `RESTORES` transactions remain untested. |
-| Escrow beneficiary and rejected-payable refund | PASS in Direct Mode; PARTIAL live | A third-party settlement caller cannot select the payout address; qualifying evidence submitter is the fixed beneficiary. Live payout/replay and invalid-payable refund are recorded. Stale/timeout refund branches are Direct Mode only. |
-| Timeout settlement and recovery | PASS in Direct Mode | No live 30-day timeout has elapsed; no time-warp is available on Studionet. |
+| Escrow beneficiary and rejected-payable refund | PASS in Direct Mode; PARTIAL live | A third-party settlement caller cannot select the payout address; qualifying evidence submitter is the fixed beneficiary. Live payout/replay and invalid-payable refund are recorded. Stale-evidence refund is Direct Mode only; the timeout refund was also exercised on a separate 60-second probe deployment. |
+| Timeout settlement and recovery | PASS in Direct Mode and on a short-timeout live probe | A 1-wei bounty refunded to its sponsor after 172 seconds on a separate deployment with a 60-second timeout. The canonical deployment still uses 30 days; that full duration has not elapsed live. |
 | Challenge behavior | PASS for evidence-backed admission in Direct Mode | Challenges are permissionless, but require a finalized opposite finding; unsupported/evidence-free calls revert without changing count or history. No bond, appeal state machine, or independent re-adjudication is implemented. |
 | Source independence | LIMITED | One support can confirm; publisher/syndication clustering is not implemented. |
 | Visual provenance | REMOVED | No visual API, field, or visual claim remains. |
 | Canonical Studionet deployment and source parity | PASS | Deployment and newline-normalized source parity recorded above. |
 | Unavailable-source consensus path | PASS live | Finalized verification and `get_status == UNAVAILABLE`. |
 | Claim graph and deterministic state | PARTIAL live | One finalized `SUPERSEDES` lifecycle observed; live `EXPIRES` and `RESTORES` remain untested. The test source reflected a query-supplied record. |
-| Live evidence matrix | PARTIAL | Render confirmation, contradiction, pinned-text history, unavailable classification, and one graph supersession are recorded. Prompt injection, challenge, mismatch, stale settlement, and timeout still lack finalized live receipts; timeout cannot be advanced on Studionet. |
+| Live evidence matrix | PARTIAL | Render confirmation, contradiction, pinned-text history, unavailable classification, one graph supersession, and a short-timeout refund probe are recorded. Prompt injection, challenge, hash mismatch, and stale-evidence settlement still lack finalized live receipts. The canonical 30-day timeout has not elapsed. |
 | Three downstream use cases | DOCUMENTED | Illustrative integration patterns, not deployed integrations. |
 
 This is not a submission-ready declaration. The canonical contract is the 2026-09-27 deployment listed above; earlier deployments remain historical. Continue to keep each gate red or partial until its specified live evidence is recorded.

@@ -44,6 +44,23 @@
     "unavailable_evidence_submit_final": "0x90badb04db1f61b88e678f8b235d1838ae3604d2d8b2ceb07531ba0214d860c7",
     "unavailable_verify_final": "0x09ea074d085d82afb089f8dc96c24ae353a1e98ea8c40e050e16f3760137e3cb"
   },
+  "separate_timeout_probe": {
+    "contract_address": "0x3b36FC39Bb3Da0371648Dd1f7d32976e991d2114",
+    "deployment_transaction": "0xf3b929e0f9df008278fdd49a8b9dab45feb1adc536a63aaa0fda36e2f66f1492",
+    "timeout_seconds": 60,
+    "probe_source_sha256": "38B7C74615AF8E08565395EAB31D0C554DAC175F05DB6B4A1D9E944AD2395DD8",
+    "deployed_source_readback_matches": true,
+    "claim_create_transaction": "0x59451c2cea553eb4cbdf8c6fd46f018f5018250851fac6a17375ac2c38e111a5",
+    "bounty_deposit_transaction": "0x182ab9d4ecc3311929b41ddb95367ad73172405d23787cbb47361ea6ecd2e8a6",
+    "settlement_transaction": "0x79c92a3342296b8e7899f581b473d94591c90058b7e6a9b6b9bfdef8104df9ca",
+    "bounty_amount_wei": "1",
+    "created_at": 1790532216,
+    "settled_at": 1790532388,
+    "elapsed_seconds": 172,
+    "result": "REFUNDED",
+    "refund_recipient": "0xaffe15eec45b68835cc9e5b4ab85dd5deae8e70b",
+    "remaining_amount_wei": "0"
+  },
   "superseded_deployments": [
     {
       "contract_address": "0xA77018a83C4d353eF31E07B59A2Ff50153e1264a",
