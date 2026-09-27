@@ -14,6 +14,8 @@
 - The regression probe for an unavailable reserved `.example` host finalized, and a live `get_status` call returned `UNAVAILABLE`; see the new deployment evidence section for its transactions.
 - A live same-host `SUPERSEDES` relation finalized with an active edge. The claim moved from `CONFIRMED` to `CONTRADICTED`; the probe used an `httpbin.org` response reflecting a query-supplied record, so it verifies contract graph execution rather than publisher authority.
 - The active deployment is `0x4512b07d637Fe42D278B25dd778a9a1a99A38Dbb`; its deployed source read-back matches SHA-256 `F945961C305652E41064CD119B3E015DCEBDC1F2CE17A19DB013F474D0F324B4`. The deployment manifest now points to this address and transaction.
+- Production live regressions now include a retrieved-byte/pinned-hash mismatch (`INTEGRITY_MISMATCH`, status `UNAVAILABLE`), a `CONTRADICTS` caller label overridden by `SUPPORTS` consensus (`CONFIRMED`), an evidence-free challenge that left status/history unchanged, and a cross-wallet 1-wei bounty paid to the evidence submitter rather than the sponsor/caller.
+- A fresh production support finding and 1-wei bounty are in progress for the actual freshness boundary. The finding was verified at timestamp `1790536083`; the contract cannot mark it stale until after `2026-10-04 19:08:04 UTC`. Its escrow remains `OPEN` pending that real-time check.
 
 ## Local result for the current source changes
 
@@ -31,17 +33,17 @@
 | --- | --- | --- |
 | Contract schema and local checks | PASS | Results above are from the pushed source. |
 | Substantive independent validator | PASS in Direct Mode | Live forged-leader tests require network-level validator receipts before release. |
-| Render-derived hashes and identity | PASS in Direct Mode; live confirmation observed | Stored live evidence detail read-back remains incomplete. |
+| Retrieved-content/hash binding | PASS in Direct Mode and live mismatch path | Production history records `INTEGRITY_MISMATCH` for the deliberately incorrect pinned digest and live status is `UNAVAILABLE`; the detailed `get_evidence` RPC read timed out. |
 | Claim graph and deterministic state | PASS in Direct Mode | Live `SUPERSEDES`, `EXPIRES`, and `RESTORES` transactions remain untested. |
-| Escrow beneficiary and rejected-payable refund | PASS in Direct Mode; PARTIAL live | A third-party settlement caller cannot select the payout address; qualifying evidence submitter is the fixed beneficiary. Live payout/replay and invalid-payable refund are recorded. Stale-evidence refund is Direct Mode only; the timeout refund was also exercised on a separate 60-second probe deployment. |
+| Escrow beneficiary and rejected-payable refund | PASS live for beneficiary isolation; PARTIAL overall | A distinct production sponsor/caller settled a 1-wei bounty and `get_bounty` returned the separate evidence submitter as winner. Live payout/replay and invalid-payable refund are recorded. Stale-evidence refund remains pending the seven-day production freshness threshold; the bounty-timeout refund was exercised on a separate 60-second probe deployment. |
 | Timeout settlement and recovery | PASS in Direct Mode and on a short-timeout live probe | A 1-wei bounty refunded to its sponsor after 172 seconds on a separate deployment with a 60-second timeout. The canonical deployment still uses 30 days; that full duration has not elapsed live. |
-| Challenge behavior | PASS for evidence-backed admission in Direct Mode | Challenges are permissionless, but require a finalized opposite finding; unsupported/evidence-free calls revert without changing count or history. No bond, appeal state machine, or independent re-adjudication is implemented. |
+| Challenge behavior | PASS for evidence-free rejection in Direct Mode and live | A production challenge without a finalized opposite finding executed as an error; claim status stayed `CONFIRMED` and history gained no `CHALLENGED` event. Valid challenges remain permissionless and require a verified conflict. No bond, appeal state machine, or independent re-adjudication is implemented. |
 | Source independence | LIMITED | One support can confirm; publisher/syndication clustering is not implemented. |
 | Visual provenance | REMOVED | No visual API, field, or visual claim remains. |
 | Canonical Studionet deployment and source parity | PASS | Deployment and newline-normalized source parity recorded above. |
 | Unavailable-source consensus path | PASS live | Finalized verification and `get_status == UNAVAILABLE`. |
 | Claim graph and deterministic state | PARTIAL live | One finalized `SUPERSEDES` lifecycle observed; live `EXPIRES` and `RESTORES` remain untested. The test source reflected a query-supplied record. |
-| Live evidence matrix | PARTIAL | Render confirmation, contradiction, pinned-text history, unavailable classification, one graph supersession, and a short-timeout refund probe are recorded. Prompt injection, challenge, hash mismatch, and stale-evidence settlement still lack finalized live receipts. The canonical 30-day timeout has not elapsed. |
+| Live evidence matrix | PARTIAL | Render confirmation, contradiction, unavailable classification, one graph supersession, hash mismatch, evidence-free challenge rejection, cross-wallet payout, and a short-timeout refund probe are recorded. Prompt injection and stale-evidence refund remain outstanding; the production stale test is staged until after `2026-10-04 19:08:04 UTC`. The canonical 30-day timeout has not elapsed. |
 | Three downstream use cases | DOCUMENTED | Illustrative integration patterns, not deployed integrations. |
 
 This is not a submission-ready declaration. The canonical contract is the 2026-09-27 deployment listed above; earlier deployments remain historical. Continue to keep each gate red or partial until its specified live evidence is recorded.

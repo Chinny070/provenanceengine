@@ -61,6 +61,48 @@
     "refund_recipient": "0xaffe15eec45b68835cc9e5b4ab85dd5deae8e70b",
     "remaining_amount_wei": "0"
   },
+  "production_steward_regressions": {
+    "pinned_digest_mismatch": {
+      "claim_create": "0x985bee089edc78e9bd6611547b4e57ffdd69f5c2c3b5e46c2c4ddf95ceb67534",
+      "evidence_submit": "0x40ce5bf5f122f8b8840924798323c2c79fb9898cdfa793dc228d9d00064380e8",
+      "verify": "0xc4c9529f16a02769a435ca4ab39297fec792067e4d2819a21f2cd41315f120c5",
+      "history_decision": "INTEGRITY_MISMATCH",
+      "live_status": "UNAVAILABLE",
+      "details_readback": "get_evidence RPC request timed out"
+    },
+    "caller_relationship_conflict": {
+      "claim_create": "0x23f97969f8ee3dc8467972cef44f8dce7155aa2d9037c35022aba0618d4361ee",
+      "evidence_submit": "0x5a6418a2d8d051557a53a89eecfd5f85abc9990b19a62264775c45ea10ebee6f",
+      "verify": "0x4658641b7bce4fa185b6106488fa7e50844f3d8d29be62c93ded901046db9eb9",
+      "caller_relationship": "CONTRADICTS",
+      "consensus_decision": "SUPPORTS",
+      "live_status": "CONFIRMED"
+    },
+    "evidence_free_challenge": {
+      "attempt": "0xefbd4b931be3fa31b4d101019ab0cd80d483b9cc63691da152295b4fd56cc5a3",
+      "leader_execution": "ERROR",
+      "status_after": "CONFIRMED",
+      "challenged_history_entry_added": false
+    },
+    "cross_wallet_bounty_beneficiary": {
+      "bounty_create": "0xf0b504044eca9264fa1de97a0804f6a43ba9faacc7bff7ed138a6e7f88b820b7",
+      "settlement": "0x34dd7115509c5b94026734100641452879790750f954e365d3a3b66638fea32b",
+      "sponsor_and_caller": "0xd55ad3274e615c0ba30b3aca38ecb76cbca7ea68",
+      "evidence_submitter_and_winner": "0xaffe15eec45b68835cc9e5b4ab85dd5deae8e70b",
+      "state": "PAID",
+      "amount_remaining_wei": "0"
+    },
+    "canonical_stale_evidence_test_pending": {
+      "claim_create": "0xd2ffcf240ba22a5d5bc4980745e06e56ddd346b6a59d78791b1ef832d021888e",
+      "evidence_submit": "0x6d8ad88791d329ad4e883b2ffccf5e090c74ba2e71548120634b1326fbc2792a",
+      "verify": "0x0e491d83b8a5b0b6445cf5433d610c04c7fc179edc624ab615ab360de19de70e",
+      "bounty_deposit": "0xecac45f819d5673a25ea12340bb286796fd14b4b4386e1907cdaafb28fd184f7",
+      "verification_timestamp": 1790536083,
+      "stale_after_utc": "2026-10-04T19:08:04Z",
+      "bounty_state": "OPEN",
+      "amount_wei": "1"
+    }
+  },
   "superseded_deployments": [
     {
       "contract_address": "0xA77018a83C4d353eF31E07B59A2Ff50153e1264a",
