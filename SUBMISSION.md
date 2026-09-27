@@ -1,8 +1,8 @@
 # Provenance Engine submission brief
 
-**Provenance Engine** is a standalone GenLayer Intelligent Contract that preserves claims, independent rendered web evidence, validator-agreed semantic findings, evidence evolution, freshness, and portable provenance receipts.
+**Provenance Engine** is a standalone GenLayer Intelligent Contract that preserves immutable claims, independently reproduced evidence artifacts, validator-agreed semantic findings, evidence evolution, freshness, and portable provenance receipts. It supports exact-byte `PINNED_TEXT` at a lower `TEXT_ONLY` assurance and `RENDERED_WEB` for confirmation, contradiction, and bounty eligibility.
 
-The user submits an immutable claim and HTTPS source reference. GenLayer validators independently render the source, derive artifact hashes and identity, and classify whether it supports or contradicts the claim. Deterministic contract code derives aggregate claim state from the active evidence graph; caller labels and model-authored final claim status do not control settlement.
+The user submits an immutable claim and HTTPS source reference. GenLayer validators independently fetch pinned text or render a web page, derive artifact hashes and identity, and classify evidence. Deterministic contract code derives aggregate claim state from the active evidence graph; caller labels and model-authored final claim status do not control settlement.
 
 The primitive is reusable by downstream systems without a contract-specific frontend or application:
 

@@ -16,7 +16,7 @@ def _create_claim(contract, claim_id="claim-1", statement="The source states a v
 
 def _submit(contract, evidence_id="evidence-1", relationship="SUPPORTS", target=""):
     contract.submit_evidence(
-        evidence_id, "claim-1", URL, relationship, target,
+        evidence_id, "claim-1", URL, relationship, "RENDERED_WEB", "NONE", target or "NONE",
     )
 
 
@@ -75,6 +75,54 @@ def test_hashes_and_identity_are_derived_from_render(direct_vm, direct_deploy):
     assert evidence.evidence_id != "evidence-1"
     assert evidence.client_alias == "evidence-1"
     assert evidence.verification == "VERIFIED"
+
+
+def test_pinned_text_uses_exact_bytes_and_independent_digest(direct_vm, direct_deploy):
+    raw = b"The source states a verifiable fact.\n"
+    expected_digest = hashlib.sha256(raw).hexdigest()
+    direct_vm.mock_web(r"https://example\.com/proof", {"status": 200, "body": raw})
+    direct_vm.mock_llm(r"provenance validator", json.dumps({
+        "decision": "SUPPORTS", "graph_relationship": "NONE", "sufficient": True,
+    }))
+    contract = direct_deploy(CONTRACT)
+    _create_claim(contract)
+    contract.submit_evidence(
+        "evidence-1", "claim-1", URL, "SUPPORTS", "PINNED_TEXT", expected_digest, "NONE",
+    )
+    contract.verify_claim("claim-1", "evidence-1")
+    item = contract.get_evidence("evidence-1")
+    assert item.evidence_class == "PINNED_TEXT"
+    assert item.content_hash == expected_digest
+    assert item.render_hash == ""
+    assert item.verification == "TEXT_SUPPORTED"
+    assert contract.get_status("claim-1") == "TEXT_ONLY"
+
+    direct_vm.clear_mocks()
+    direct_vm.mock_web(r"https://example\.com/proof", {"status": 200, "body": b"altered source bytes"})
+    direct_vm.mock_llm(r"provenance validator", json.dumps({
+        "decision": "SUPPORTS", "graph_relationship": "NONE", "sufficient": True,
+    }))
+    assert direct_vm.run_validator() is False
+
+
+def test_pinned_text_digest_mismatch_is_inconclusive_not_contradiction(direct_vm, direct_deploy):
+    raw = b"Different bytes than pinned."
+    direct_vm.mock_web(r"https://example\.com/proof", {"status": 200, "body": raw})
+    contract = direct_deploy(CONTRACT)
+    _create_claim(contract)
+    contract.submit_evidence(
+        "evidence-1", "claim-1", URL, "SUPPORTS", "PINNED_TEXT", "0" * 64, "NONE",
+    )
+    contract.verify_claim("claim-1", "evidence-1")
+    assert contract.get_status("claim-1") == "UNAVAILABLE"
+    assert contract.get_evidence("evidence-1").verification == "INTEGRITY_MISMATCH"
+
+
+def test_unimplemented_evidence_class_is_rejected(direct_vm, direct_deploy):
+    contract = direct_deploy(CONTRACT)
+    _create_claim(contract)
+    with direct_vm.expect_revert("invalid evidence_class"):
+        contract.submit_evidence("e-1", "claim-1", URL, "SUPPORTS", "PINNED_JSON", "NONE", "NONE")
 
 
 def test_same_canonical_artifact_has_stable_id_and_changed_render_has_new_id(direct_vm, direct_deploy):
@@ -325,8 +373,21 @@ def _fund_bounty(direct_vm, contract, bounty_id="bounty-1"):
 def test_zero_bounty_rejected(direct_vm, direct_deploy):
     contract = direct_deploy(CONTRACT)
     _create_claim(contract)
-    with direct_vm.expect_revert("bounty must include GEN"):
-        contract.create_bounty("bounty-1", "claim-1")
+    assert contract.create_bounty("bounty-1", "claim-1") == "REJECTED:ZERO_VALUE"
+
+
+def test_invalid_payable_bounty_returns_normally_and_requests_refund(direct_vm, direct_deploy, monkeypatch):
+    contract = direct_deploy(CONTRACT)
+    _create_claim(contract)
+    sent = []
+    monkeypatch.setattr(contract, "_send_gen", lambda recipient, amount: sent.append((recipient, int(amount))))
+    direct_vm.value = 1
+    result = contract.create_bounty("bounty-1", "missing-claim")
+    direct_vm.value = 0
+    assert result == "REJECTED:UNKNOWN_CLAIM"
+    assert len(sent) == 1 and str(sent[0][0]).lower() == str(contract.owner).lower()
+    assert sent[0][1] == 1
+    assert "bounty-1" not in contract.bounty_index
 
 
 def test_front_runner_cannot_take_bounty_from_evidence_submitter(direct_vm, direct_deploy):

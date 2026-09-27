@@ -2,24 +2,37 @@
 
 ## Registered observation
 
-`submit_evidence(evidence_id, claim_id, source_url, relationship, target_evidence_id="")` stores the caller alias, immutable claim link, HTTPS URL, submitter, and assertion. The only retrieval type is fixed by the contract to `RENDER_HTML`. Hashes are not accepted from callers.
+`submit_evidence(evidence_id, claim_id, source_url, relationship, evidence_class, expected_digest, target_evidence_id)` stores a caller alias, immutable claim link, HTTPS URL, submitter, evidence class, optional pin assertion, and relationship assertion. The observed content/render hashes and canonical evidence ID are never accepted from callers. For GenLayer CLI calls, use the literal string `NONE` for an absent digest or target; its scalar parser turns a bare empty positional argument into integer zero.
 
-During verification, leader and validator render the same stored URL independently. For rendered HTML `R`, canonical visible text `T`, claim identifier `C`, and URL `U`:
+Implemented classes are deliberately limited to `PINNED_TEXT` and `RENDERED_WEB`. `PINNED_JSON` and `VISUAL` are not exposed as supported classes.
+
+### PINNED_TEXT
+
+Leader and validator independently call `gl.nondet.web.get`, require a successful HTTP status and bounded nonempty response bytes, and recompute SHA-256 over the exact bytes. The caller's expected digest is only an assertion. A mismatch is stored as `INTEGRITY_MISMATCH`, is treated as unavailable for claim aggregation, and is never passed to the semantic model. UTF-8 decoding is required after the byte digest matches; decoding failure is `INSUFFICIENT`.
+
+```text
+content_hash = SHA256(response.body exact bytes)
+render_hash  = ""
+```
+
+The model receives the decoded text as untrusted data only after the exact digest check. It classifies the text against the immutable claim; validators repeat both retrieval/hash and semantic interpretation.
+
+### RENDERED_WEB
+
+Leader and validator independently render the same URL using `gl.nondet.web.render(url, mode="html")`. For rendered HTML `R` and canonical visible text `T`:
 
 ```text
 render_hash  = SHA256(UTF8(R))
 content_hash = SHA256(UTF8(lowercase(collapse_whitespace(strip_comments_tags_script_style(R)))))
-evidence_id  = SHA256(UTF8(JSON_COMPACT([
-  "provenance-evidence-v1", C, U, "RENDER_HTML", render_hash,
-  content_hash, "html-text-whitespace-lower-v1"
-])))
 ```
 
-`JSON_COMPACT` uses JSON array ordering, UTF-8 encoding, and separators `,` and `:` without spaces. It does not add a timestamp or submitter. Identical artifact observations derive identical IDs; an observation alias remains available to clients.
+For either evidence class, identity is `SHA256(UTF8(JSON_COMPACT(["provenance-evidence-v1", claim_id, source_url, evidence_class, render_hash, content_hash, class_normalization_version])))`. `JSON_COMPACT` uses JSON array ordering, UTF-8 encoding, and separators `,` and `:` without spaces. It does not add a timestamp or submitter. Identical artifact observations derive identical IDs; an observation alias remains available to clients.
 
 ## Finding and graph
 
-Consensus classifies claim relationship as `SUPPORTS`, `CONTRADICTS`, or `INSUFFICIENT`, and separately classifies a target relation as `NONE`, `SUPERSEDES`, `EXPIRES`, or `RESTORES`. An unavailable render produces `UNAVAILABLE` without asking the model to call it contradictory. Graph edges can only point to an older verified item. `SUPERSEDES` and `EXPIRES` deactivate the target; a later `RESTORES` edge reactivates it. All edges and evidence remain in history.
+The class-specific normalization versions are `exact-response-bytes-sha256-v1` and `html-text-whitespace-lower-v1`. No timestamp or submitter enters identity.
+
+Consensus classifies claim relationship as `SUPPORTS`, `CONTRADICTS`, or `INSUFFICIENT`, and separately classifies a target relation as `NONE`, `SUPERSEDES`, `EXPIRES`, or `RESTORES`. An unavailable source or pin mismatch is never called contradictory. Graph edges can only point to an older verified item. `SUPERSEDES` and `EXPIRES` deactivate the target; a later `RESTORES` edge reactivates the target. All edges and evidence remain in history.
 
 ## Deterministic aggregate
 

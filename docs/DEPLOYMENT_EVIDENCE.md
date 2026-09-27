@@ -2,6 +2,10 @@
 
 > The transactions below prove behavior for the historical source SHA-256 `81B81B6E5CB57875236719D1A762791D94FA5C30C8ED0E24B92CC51C27AFBCF6` only. The current working tree has a different contract source hash, so this is not its canonical deployment evidence. A fresh deployment and live verification are still required.
 
+## Superseded pre-addendum checkpoint
+
+On 2026-09-27, source SHA-256 `0A90EFCF909B3075BB1D2398A9FBEF176F625009CE419FC262C631E2D797B478` was deployed at [0x2827dB51F877691e0001De9Fc8A29e3Ba1Ea69CA](https://explorer-studio.genlayer.com/address/0x2827dB51F877691e0001De9Fc8A29e3Ba1Ea69CA) by [transaction 0x9282ab096a2986b8f8d358742dbf0df065606a01a6f11bf3c6735b921f11f10e](https://explorer-studio.genlayer.com/tx/0x9282ab096a2986b8f8d358742dbf0df065606a01a6f11bf3c6735b921f11f10e). Its deployment receipt finalized with `MAJORITY_AGREE`. This checkpoint was retired before release after live interaction exposed that GenLayer CLI parses a bare empty argument as numeric zero. The first evidence submission, [0xac5427a96383cf5495f837b2825e9685def3a84483867e05374e2190bb13363a](https://explorer-studio.genlayer.com/tx/0xac5427a96383cf5495f837b2825e9685def3a84483867e05374e2190bb13363a), finalized with a runtime error at `Evidence` storage: `AttributeError: 'int' object has no attribute 'encode'`. A retry using literal quote characters did not produce a readable evidence record; the subsequent `get_evidence` call returned `unknown evidence`, and the claim remained `INSUFFICIENT`. Claim creation [0xb18c0c87b0318ee5b6cfdef38fa525de3adc1e5d0875ba8710dce5b5805fc942](https://explorer-studio.genlayer.com/tx/0xb18c0c87b0318ee5b6cfdef38fa525de3adc1e5d0875ba8710dce5b5805fc942) and verification attempt [0x481944fa8bde2d6fc1188afc35502e232c6b0884b0902718bdc231f9fedb95c7](https://explorer-studio.genlayer.com/tx/0x481944fa8bde2d6fc1188afc35502e232c6b0884b0902718bdc231f9fedb95c7) are historical attempts, not successful live evidence proof. The contract now accepts the explicit `NONE` string sentinel. The same source was then expanded to implement lower-assurance exact-byte `PINNED_TEXT` and normal-return/refund handling for rejected payable calls. This checkpoint does not prove those later changes.
+
 The historical contract was deployed on Studionet (chain ID `61999`) at [0xA77018a83C4d353eF31E07B59A2Ff50153e1264a](https://explorer-studio.genlayer.com/address/0xA77018a83C4d353eF31E07B59A2Ff50153e1264a). Its deployment transaction [0x6e2689f9e87aa273366766dbc255bf9046623143fb7657b7d88e8fe4a7786f07](https://explorer-studio.genlayer.com/tx/0x6e2689f9e87aa273366766dbc255bf9046623143fb7657b7d88e8fe4a7786f07) finalized with `MAJORITY_AGREE`. The deployed source was `contracts/provenance_engine.py`, SHA-256 `81B81B6E5CB57875236719D1A762791D94FA5C30C8ED0E24B92CC51C27AFBCF6`.
 
 ## Live claim and evidence lifecycle
@@ -18,14 +22,16 @@ A separate claim, `live-refund-v2-20260926`, stated that Example Domain advertis
 
 A separate 1 GEN bounty was deposited in [0xcacf92cb7261bf8a68b52dbe83e54a972fe6c60171e77e6e8f6d03a9bdbef450](https://explorer-studio.genlayer.com/tx/0xcacf92cb7261bf8a68b52dbe83e54a972fe6c60171e77e6e8f6d03a9bdbef450). Refund settlement finalized in [0x5d873621702dc25c017cf0aba32416c04af6f6fa0186ab355486d29f8ebf8bd6](https://explorer-studio.genlayer.com/tx/0x5d873621702dc25c017cf0aba32416c04af6f6fa0186ab355486d29f8ebf8bd6), triggering a finalized 1 GEN transfer back to the sponsor at [0xf92b7080c46412d7b3496d9200be8f44cc61f0e21cbc23dbf2105d555b4daae1](https://explorer-studio.genlayer.com/tx/0xf92b7080c46412d7b3496d9200be8f44cc61f0e21cbc23dbf2105d555b4daae1). Claim history records `BOUNTY_REFUNDED`.
 
-## Local verification
+## Verification recorded for the earlier source
 
-The current source passed:
+The earlier deployed source passed:
 
 - `python -m pytest -q` — 10 passed.
 - `genvm-lint check contracts/provenance_engine.py` — 3 lint checks passed; validation passed.
 - `genvm-lint schema contracts/provenance_engine.py` — 12 methods found (6 views, 6 writes).
 - `gltest tests -v --network localnet` — 10 passed, including prompt injection, malformed validator output, challenge history, escrow structure, and duplicate identity checks.
+
+The current, undeployed working source SHA-256 is `40A94B3192EBC5957620528714128D0295F4A81288E2AE8E33E1F354C41E4BEB` (790 lines). It passes `python -m pytest -q` and `gltest tests -v --network localnet` with 58 tests, plus 3 GenVM lint checks and schema validation with 14 methods. Its live evidence, rejected-payable refund, and source-parity gates remain pending.
 
 ## Superseded deployment
 

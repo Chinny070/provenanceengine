@@ -5,7 +5,7 @@
   "rpc": "https://studio.genlayer.com/api",
   "canonical_status": "HISTORICAL_SOURCE_MISMATCH_PENDING_REDEPLOYMENT",
   "active_contract_address": null,
-  "working_tree_source_sha256": "0A90EFCF909B3075BB1D2398A9FBEF176F625009CE419FC262C631E2D797B478",
+  "working_tree_source_sha256": "40A94B3192EBC5957620528714128D0295F4A81288E2AE8E33E1F354C41E4BEB",
   "last_deployed_source_matches_working_tree": false,
   "contract_address": "0xA77018a83C4d353eF31E07B59A2Ff50153e1264a",
   "deployment_transaction": "0x6e2689f9e87aa273366766dbc255bf9046623143fb7657b7d88e8fe4a7786f07",
@@ -38,6 +38,12 @@
     "refund_transfer": "0xf92b7080c46412d7b3496d9200be8f44cc61f0e21cbc23dbf2105d555b4daae1"
   },
   "superseded_deployments": [
+    {
+      "contract_address": "0x2827dB51F877691e0001De9Fc8A29e3Ba1Ea69CA",
+      "deployment_transaction": "0x9282ab096a2986b8f8d358742dbf0df065606a01a6f11bf3c6735b921f11f10e",
+      "source_sha256": "0A90EFCF909B3075BB1D2398A9FBEF176F625009CE419FC262C631E2D797B478",
+      "reason": "Superseded before release after live writes exposed the GenLayer CLI empty-string argument coercion; the final source adds explicit sentinels, PINNED_TEXT assurance rules, and safe payable rejection handling."
+    },
     {
       "contract_address": "0xF28617DeFdB0E3683440c8Fa7a82c54E52DA2536",
       "deployment_transaction": "0x3012c3008010c5eb42e8fb36ef90e9048fe60519fefde1f1192f6a5138a7fdbf",
