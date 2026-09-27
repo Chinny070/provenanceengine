@@ -45,7 +45,7 @@ genvm-lint schema contracts/provenance_engine.py
 gltest tests -v --network localnet
 ```
 
-The canonical Studionet deployment is [0xbC3fE4d84CE9b9E57c491494De62dbD999Ca4aC2](https://explorer-studio.genlayer.com/address/0xbC3fE4d84CE9b9E57c491494De62dbD999Ca4aC2), deployed from the public `main` commit recorded in [deployment evidence](docs/DEPLOYMENT_EVIDENCE.md). The deployed source hash matches the 790-line source. The live checks confirm claim creation, rendered evidence, a pinned-text verification history, rejected-payable refund request, payout to the evidence submitter, and a replay attempt. Remaining live gates are tracked in [release-candidate verification](docs/RELEASE_CANDIDATE_VERIFICATION.md); do not treat the project as submission-ready until they are closed. Deployment details are in [DEPLOYMENT.md](DEPLOYMENT.md).
+The canonical Studionet deployment is [0x4512b07d637Fe42D278B25dd778a9a1a99A38Dbb](https://explorer-studio.genlayer.com/address/0x4512b07d637Fe42D278B25dd778a9a1a99A38Dbb), deployed in [transaction 0x809920a2feac4b4ce40d58dc27f9fde594d2eb485686446c6e306e3e0c395f97](https://explorer-studio.genlayer.com/tx/0x809920a2feac4b4ce40d58dc27f9fde594d2eb485686446c6e306e3e0c395f97). The deployed source read-back matches the current 829-line contract. Live evidence and direct transaction links are in [deployment evidence](docs/DEPLOYMENT_EVIDENCE.md); adversarial test results and remaining live gates are in [release-candidate verification](docs/RELEASE_CANDIDATE_VERIFICATION.md). The production stale-evidence refund is staged until the seven-day freshness threshold, and the canonical bounty timeout remains 30 days. See [deployment details](DEPLOYMENT.md).
 
 ## Example consumers
 
