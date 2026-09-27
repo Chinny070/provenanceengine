@@ -2,7 +2,7 @@
 
 ## Registered observation
 
-`submit_evidence(evidence_id, claim_id, source_url, relationship, evidence_class, expected_digest, target_evidence_id)` stores a caller alias, immutable claim link, HTTPS URL, submitter, evidence class, optional pin assertion, and relationship assertion. The observed content/render hashes and canonical evidence ID are never accepted from callers. For GenLayer CLI calls, use the literal string `NONE` for an absent digest or target; its scalar parser turns a bare empty positional argument into integer zero.
+`submit_evidence(evidence_id, claim_id, source_url, relationship, evidence_class, expected_digest, target_evidence_id)` stores a caller-selected observation ID, immutable claim link, HTTPS URL, submitter, evidence class, optional pin assertion, and relationship assertion. That observation ID is never changed. The derived canonical artifact ID is stored separately per observation and is not an alias lookup key, so repeated artifacts cannot overwrite the caller-ID index. For GenLayer CLI calls, use the literal string `NONE` for an absent digest or target; its scalar parser turns a bare empty positional argument into integer zero.
 
 Implemented classes are deliberately limited to `PINNED_TEXT` and `RENDERED_WEB`. `PINNED_JSON` and `VISUAL` are not exposed as supported classes.
 
@@ -15,7 +15,7 @@ content_hash = SHA256(response.body exact bytes)
 render_hash  = ""
 ```
 
-The model receives the decoded text as untrusted data only after the exact digest check. It classifies the text against the immutable claim; validators repeat both retrieval/hash and semantic interpretation.
+The model receives the decoded text as untrusted data only after the exact digest check. It classifies the text against the immutable claim; validators repeat both retrieval/hash and semantic interpretation. Normalized artifacts larger than 16,384 characters are stored as inconclusive rather than classifying a truncated prefix. For accepted artifacts, the complete canonical text is sent to consensus and retained for later graph review.
 
 ### RENDERED_WEB
 
@@ -32,7 +32,7 @@ For either evidence class, identity is `SHA256(UTF8(JSON_COMPACT(["provenance-ev
 
 The class-specific normalization versions are `exact-response-bytes-sha256-v1` and `html-text-whitespace-lower-v1`. No timestamp or submitter enters identity.
 
-Consensus classifies claim relationship as `SUPPORTS`, `CONTRADICTS`, or `INSUFFICIENT`, and separately classifies a target relation as `NONE`, `SUPERSEDES`, `EXPIRES`, or `RESTORES`. An unavailable source or pin mismatch is never called contradictory. Graph edges can only point to an older verified item. `SUPERSEDES` and `EXPIRES` deactivate the target; a later `RESTORES` edge reactivates the target. All edges and evidence remain in history.
+Consensus classifies claim relationship as `SUPPORTS`, `CONTRADICTS`, `INSUFFICIENT`, or `UNAVAILABLE`, and separately classifies a target relation as `NONE`, `SUPERSEDES`, `EXPIRES`, or `RESTORES`. An unavailable source or pin mismatch is never called contradictory. Graph relations require rendered web evidence from the same exact submitted host as the older target, and validators receive that target's retained canonical content and observation hashes. Pinned text cannot create graph edges. `SUPERSEDES` and `EXPIRES` deactivate the target; a later `RESTORES` edge reactivates the target. All edges and evidence remain in history.
 
 ## Deterministic aggregate
 

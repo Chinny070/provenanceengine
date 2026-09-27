@@ -1,6 +1,20 @@
 # Studionet deployment evidence
 
-## Canonical deployment: final pushed source
+## Current canonical deployment
+
+Contract [0x4512b07d637Fe42D278B25dd778a9a1a99A38Dbb](https://explorer-studio.genlayer.com/address/0x4512b07d637Fe42D278B25dd778a9a1a99A38Dbb) was deployed on Studionet (chain ID `61999`) in [transaction 0x809920a2feac4b4ce40d58dc27f9fde594d2eb485686446c6e306e3e0c395f97](https://explorer-studio.genlayer.com/tx/0x809920a2feac4b4ce40d58dc27f9fde594d2eb485686446c6e306e3e0c395f97), `FINALIZED`, `MAJORITY_AGREE`. `genlayer code` read-back matches the local 829-line source after newline normalization. Local SHA-256: `F945961C305652E41064CD119B3E015DCEBDC1F2CE17A19DB013F474D0F324B4`.
+
+The active signer was `my-studionet-wallet`, address `0xaffe15eec45b68835cc9e5b4ab85dd5deae8e70b`.
+
+### Unavailable-source consensus regression
+
+Claim `pe-unavailable-20260927` was created in [0xf2ac4c41bffcd2b49f6798f47ac5f5385caf6645bac0d0f981b26ff5c8f743d6](https://explorer-studio.genlayer.com/tx/0xf2ac4c41bffcd2b49f6798f47ac5f5385caf6645bac0d0f981b26ff5c8f743d6). Evidence for the reserved nonexistent host `provenance-engine-not-found-20260927.example` was registered in [0x90badb04db1f61b88e678f8b235d1838ae3604d2d8b2ceb07531ba0214d860c7](https://explorer-studio.genlayer.com/tx/0x90badb04db1f61b88e678f8b235d1838ae3604d2d8b2ceb07531ba0214d860c7). Verification finalized in [0x09ea074d085d82afb089f8dc96c24ae353a1e98ea8c40e050e16f3760137e3cb](https://explorer-studio.genlayer.com/tx/0x09ea074d085d82afb089f8dc96c24ae353a1e98ea8c40e050e16f3760137e3cb), and the live `get_status` call returned `UNAVAILABLE`.
+
+### Live evidence graph lifecycle
+
+Claim `pe-graph-live-20260927` was created in [0xba8e3a73ceff8948fbae08e3e45ba6c483e3c23d5b3d45ce785c79434c08ef0a](https://explorer-studio.genlayer.com/tx/0xba8e3a73ceff8948fbae08e3e45ba6c483e3c23d5b3d45ce785c79434c08ef0a). Its initial rendered evidence `pe-graph-old` was submitted in [0xedbed3195a3a54a68ae43e8d3a87d7f5dac4766be1f68de46da9c40816c3a817](https://explorer-studio.genlayer.com/tx/0xedbed3195a3a54a68ae43e8d3a87d7f5dac4766be1f68de46da9c40816c3a817), verified in [0xb873412b47ed2b53094dbf638c908c5e9a1a88ee53d3588461a43dca8d4280c3](https://explorer-studio.genlayer.com/tx/0xb873412b47ed2b53094dbf638c908c5e9a1a88ee53d3588461a43dca8d4280c3), and read as `CONFIRMED`. Replacement evidence `pe-graph-new` from the same `httpbin.org` host targeted `pe-graph-old`; its submission finalized in [0x9c70ae08ea0e1585e6a7d67ba792c5fb3df39e40660b8e48c938050a50cd5c50](https://explorer-studio.genlayer.com/tx/0x9c70ae08ea0e1585e6a7d67ba792c5fb3df39e40660b8e48c938050a50cd5c50). Verification finalized in [0xe533f9f39f7f801b55e7c482c1fe0af790fdec3db132736bc2c9864d14cbd144](https://explorer-studio.genlayer.com/tx/0xe533f9f39f7f801b55e7c482c1fe0af790fdec3db132736bc2c9864d14cbd144). Live reads showed an active `SUPERSEDES` edge from `pe-graph-new` to `pe-graph-old` and the claim status changed to `CONTRADICTED`. The `httpbin.org` endpoint reflected a test record supplied in its query; this exercises the on-chain graph transition, not independent publisher authority. This verifies one full supersession path; it does not test `EXPIRES` or `RESTORES` live.
+
+## Previous canonical deployment (superseded)
 
 Commit `d35478517283377508b44521516355c67f82f6ff` on public `main` was deployed on Studionet (chain ID `61999`) at [0xbC3fE4d84CE9b9E57c491494De62dbD999Ca4aC2](https://explorer-studio.genlayer.com/address/0xbC3fE4d84CE9b9E57c491494De62dbD999Ca4aC2). Deployment transaction [0xe15faf459e161b7ba5d7e76267dbfd33ab37261674e31d99333de5473190cdec](https://explorer-studio.genlayer.com/tx/0xe15faf459e161b7ba5d7e76267dbfd33ab37261674e31d99333de5473190cdec) finalized with `MAJORITY_AGREE`. `genlayer code` read-back matched the committed 790-line `contracts/provenance_engine.py` byte-for-byte after newline normalization: SHA-256 `40A94B3192EBC5957620528714128D0295F4A81288E2AE8E33E1F354C41E4BEB`.
 
@@ -28,7 +42,7 @@ An invalid bounty with `0.000001 GEN` attached was submitted in [0x686a5fbec04d1
 
 A valid `0.000001 GEN` bounty deposit finalized in [0x9e284a46a164c4749c8e4d66c0eac71a93434c0100bc305effbf83f3be62171e](https://explorer-studio.genlayer.com/tx/0x9e284a46a164c4749c8e4d66c0eac71a93434c0100bc305effbf83f3be62171e). Payout finalized in [0x25ed70c9ec8f981ab3888f659bf2966a30b7503910dd9a2a552b474e29b932be](https://explorer-studio.genlayer.com/tx/0x25ed70c9ec8f981ab3888f659bf2966a30b7503910dd9a2a552b474e29b932be); the receipt contains a transfer message of the same amount to wallet `0xaffe15eec45b68835cc9e5b4ab85dd5deae8e70b`. `get_bounty` returned state `PAID` and the same wallet as winner. A second `claim_reward` call finalized in [0x8e7c65cdcd4050405ec25c8dcf2f3317f7e6154c81cddb19a3a2a5011b4d9545](https://explorer-studio.genlayer.com/tx/0x8e7c65cdcd4050405ec25c8dcf2f3317f7e6154c81cddb19a3a2a5011b4d9545); its validator execution receipts were errors while the bounty remained `PAID`, and no second payout message was present.
 
-These live checks do not cover contradiction/dispute, graph edges (`SUPERSEDES`, `EXPIRES`, `RESTORES`), unavailable sources, prompt injection, a challenge, a different payout beneficiary, or 30-day timeout settlement. They do not establish publisher authenticity or independence. See [release-candidate verification](RELEASE_CANDIDATE_VERIFICATION.md) for the remaining gates.
+These live checks do not cover prompt injection, a challenge, a different payout beneficiary, 30-day timeout settlement, or the `EXPIRES` and `RESTORES` graph relations. The `SUPERSEDES` probe uses a reflected test record and does not establish publisher authenticity or independence. See [release-candidate verification](RELEASE_CANDIDATE_VERIFICATION.md) for the remaining gates.
 
 ## Historical deployments
 

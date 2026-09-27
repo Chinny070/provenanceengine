@@ -72,7 +72,9 @@ def test_hashes_and_identity_are_derived_from_render(direct_vm, direct_deploy):
     evidence = contract.get_evidence("evidence-1")
     assert evidence.content_hash == hashlib.sha256("the source states a verifiable fact.".encode()).hexdigest()
     assert evidence.render_hash == hashlib.sha256(HTML.encode()).hexdigest()
-    assert evidence.evidence_id != "evidence-1"
+    assert evidence.evidence_id == "evidence-1"
+    assert evidence.artifact_id != "evidence-1"
+    assert evidence.canonical_content == "the source states a verifiable fact."
     assert evidence.client_alias == "evidence-1"
     assert evidence.verification == "VERIFIED"
 
@@ -131,19 +133,38 @@ def test_same_canonical_artifact_has_stable_id_and_changed_render_has_new_id(dir
     _mock_verification(direct_vm)
     _submit(contract, "first")
     contract.verify_claim("claim-1", "first")
-    first_id = contract.get_evidence("first").evidence_id
+    first_id = contract.get_evidence("first").artifact_id
 
     direct_vm.clear_mocks()
     _mock_verification(direct_vm)
     contract.submit_evidence("same-content", "claim-1", URL, "SUPPORTS")
     contract.verify_claim("claim-1", "same-content")
-    assert contract.get_evidence("same-content").evidence_id == first_id
+    assert contract.get_evidence("same-content").artifact_id == first_id
 
     direct_vm.clear_mocks()
     _mock_verification(direct_vm, "SUPPORTS", True, UPDATED_HTML)
     contract.submit_evidence("changed-content", "claim-1", URL, "SUPPORTS")
     contract.verify_claim("claim-1", "changed-content")
-    assert contract.get_evidence("changed-content").evidence_id != first_id
+    assert contract.get_evidence("changed-content").artifact_id != first_id
+
+
+def test_canonical_artifact_hash_cannot_overwrite_alias_lookup(direct_vm, direct_deploy):
+    contract = direct_deploy(CONTRACT)
+    _create_claim(contract)
+    canonical = contract._canonical_artifact(HTML)
+    render_hash = hashlib.sha256(HTML.encode()).hexdigest()
+    content_hash = hashlib.sha256(canonical.encode()).hexdigest()
+    artifact_id = contract._artifact_identity(
+        "claim-1", URL, "RENDERED_WEB", render_hash, content_hash,
+    )
+    # Reserve the canonical-looking string as another record's caller alias.
+    _submit(contract, artifact_id)
+    _submit(contract, "first")
+    _mock_verification(direct_vm)
+    contract.verify_claim("claim-1", "first")
+    assert contract.get_evidence(artifact_id).client_alias == artifact_id
+    assert contract.get_evidence("first").artifact_id == artifact_id
+    assert contract.get_evidence("first").evidence_id == "first"
 
 
 def test_content_hash_uses_visible_text_and_excludes_scripts_styles_and_comments(direct_vm, direct_deploy):
@@ -235,6 +256,30 @@ def test_unavailable_source_is_not_a_contradiction(direct_deploy):
     assert contract.get_evidence("evidence-1").verification == "UNAVAILABLE"
 
 
+def test_unavailable_decision_passes_full_consensus_validator(direct_vm, direct_deploy):
+    direct_vm.mock_web(r"https://example\.com/proof", Exception("source unavailable"))
+    contract = direct_deploy(CONTRACT)
+    _create_claim(contract)
+    _submit(contract)
+    contract.verify_claim("claim-1", "evidence-1")
+    proposed = dict(direct_vm._captured_validators[-1][0])
+    assert proposed["decision"] == "UNAVAILABLE"
+    assert direct_vm.run_validator(leader_result=proposed) is True
+
+
+def test_oversized_canonical_artifact_fails_closed_without_prefix_classification(direct_vm, direct_deploy):
+    long_render = "<p>" + ("x" * 17_000) + "</p>"
+    direct_vm.mock_web(r"https://example\.com/proof", {"status": 200, "body": long_render})
+    contract = direct_deploy(CONTRACT)
+    _create_claim(contract)
+    _submit(contract)
+    contract.verify_claim("claim-1", "evidence-1")
+    item = contract.get_evidence("evidence-1")
+    assert item.verification == "INSUFFICIENT"
+    assert item.canonical_content == ""
+    assert contract.get_status("claim-1") == "INSUFFICIENT"
+
+
 @pytest.mark.parametrize("url", [
     "http://example.com", "https://localhost/proof", "https://node.local/data",
     "https://user@example.com/proof", "https://127.0.0.1/proof", "https://2130706433/proof",
@@ -282,6 +327,33 @@ def test_wrong_claim_and_unverified_graph_target_rejected(direct_vm, direct_depl
         _submit(contract, "evidence-2", "SUPERSEDES", "evidence-1")
 
 
+def test_graph_relationship_rejects_different_source_authority(direct_vm, direct_deploy):
+    _mock_verification(direct_vm)
+    contract = direct_deploy(CONTRACT)
+    _create_claim(contract)
+    _submit(contract, "original")
+    contract.verify_claim("claim-1", "original")
+    with direct_vm.expect_revert("graph relationships require source authority continuity"):
+        contract.submit_evidence(
+            "foreign", "claim-1", "https://other.example/proof", "EXPIRES",
+            "RENDERED_WEB", "NONE", "original",
+        )
+
+
+def test_pinned_text_cannot_create_graph_relationship(direct_vm, direct_deploy):
+    _mock_verification(direct_vm)
+    contract = direct_deploy(CONTRACT)
+    _create_claim(contract)
+    _submit(contract, "original")
+    contract.verify_claim("claim-1", "original")
+    raw = b"Some pinned source text."
+    with direct_vm.expect_revert("graph relationships require rendered web evidence"):
+        contract.submit_evidence(
+            "pinned-graph", "claim-1", URL, "EXPIRES", "PINNED_TEXT",
+            hashlib.sha256(raw).hexdigest(), "original",
+        )
+
+
 def test_graph_cannot_supersede_identical_artifact_identity(direct_vm, direct_deploy):
     contract = direct_deploy(CONTRACT)
     _create_claim(contract)
@@ -319,6 +391,49 @@ def test_supersedes_expires_and_restores_have_targeted_graph_edges(direct_vm, di
     assert contract.get_status("claim-1") == "CONFIRMED"
 
 
+def test_graph_validator_receives_historical_target_artifact(direct_vm, direct_deploy):
+    contract = direct_deploy(CONTRACT)
+    _create_claim(contract)
+    _mock_verification(direct_vm, "SUPPORTS")
+    _submit(contract, "initial")
+    contract.verify_claim("claim-1", "initial")
+    target_content = contract.get_evidence("initial").canonical_content
+
+    direct_vm.clear_mocks()
+    _mock_verification(direct_vm, "INSUFFICIENT", True, UPDATED_HTML, "EXPIRES")
+    _submit(contract, "expire", "EXPIRES", "initial")
+    prompts = []
+    original_match = direct_vm._match_llm_mock
+
+    def capture_prompt(prompt):
+        prompts.append(prompt)
+        return original_match(prompt)
+
+    direct_vm._match_llm_mock = capture_prompt
+    contract.verify_claim("claim-1", "expire")
+    assert prompts
+    assert all("Target evidence ID: initial" in prompt for prompt in prompts)
+    assert all(target_content in prompt for prompt in prompts)
+    assert all("Target artifact hash:" in prompt for prompt in prompts)
+
+
+def test_full_global_graph_does_not_block_ordinary_evidence_submission(direct_vm, direct_deploy):
+    contract = direct_deploy(CONTRACT)
+    _create_claim(contract)
+    _mock_verification(direct_vm)
+    _submit(contract, "initial")
+    contract.verify_claim("claim-1", "initial")
+    direct_vm.clear_mocks()
+    _mock_verification(direct_vm, "INSUFFICIENT", True, UPDATED_HTML, "EXPIRES")
+    _submit(contract, "expire", "EXPIRES", "initial")
+    contract.verify_claim("claim-1", "expire")
+    existing = contract.get_evidence_edges("claim-1")[0]
+    for _ in range(511):
+        contract.edges.append(existing)
+    _submit(contract, "ordinary-after-cap")
+    assert contract.get_evidence("ordinary-after-cap").verification == "PENDING"
+
+
 def test_challenge_records_conflicting_consensus_without_erasing_evidence(direct_vm, direct_deploy):
     contract = direct_deploy(CONTRACT)
     _create_claim(contract)
@@ -330,6 +445,8 @@ def test_challenge_records_conflicting_consensus_without_erasing_evidence(direct
     _submit(contract, "conflict", "CONTRADICTS")
     contract.verify_claim("claim-1", "conflict")
     contract.challenge_claim("claim-1", "conflict", "MATERIAL_CONFLICT")
+    with direct_vm.expect_revert("evidence already challenged"):
+        contract.challenge_claim("claim-1", "conflict", "MATERIAL_CONFLICT")
     assert contract.get_status("claim-1") == "DISPUTED"
     assert len(contract.get_history("claim-1")) == 6
 

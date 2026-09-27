@@ -2,24 +2,26 @@
 
 ## Current pushed and deployed source
 
-- Public commit: `d35478517283377508b44521516355c67f82f6ff` on `main`.
-- Studionet contract: [0xbC3fE4d84CE9b9E57c491494De62dbD999Ca4aC2](https://explorer-studio.genlayer.com/address/0xbC3fE4d84CE9b9E57c491494De62dbD999Ca4aC2).
-- Deployment transaction: [0xe15faf459e161b7ba5d7e76267dbfd33ab37261674e31d99333de5473190cdec](https://explorer-studio.genlayer.com/tx/0xe15faf459e161b7ba5d7e76267dbfd33ab37261674e31d99333de5473190cdec), `FINALIZED`, `MAJORITY_AGREE`.
-- `genlayer code` read-back exactly matches the local 790-line contract after newline normalization; both SHA-256 values are `40A94B3192EBC5957620528714128D0295F4A81288E2AE8E33E1F354C41E4BEB`.
+- Public repository: [Chinny070/provenanceengine](https://github.com/Chinny070/provenanceengine), branch `main`.
+- Studionet contract: [0x4512b07d637Fe42D278B25dd778a9a1a99A38Dbb](https://explorer-studio.genlayer.com/address/0x4512b07d637Fe42D278B25dd778a9a1a99A38Dbb).
+- Deployment transaction: [0x809920a2feac4b4ce40d58dc27f9fde594d2eb485686446c6e306e3e0c395f97](https://explorer-studio.genlayer.com/tx/0x809920a2feac4b4ce40d58dc27f9fde594d2eb485686446c6e306e3e0c395f97), `FINALIZED`, `MAJORITY_AGREE`.
+- `genlayer code` read-back matches the local 829-line contract after newline normalization; local SHA-256 is `F945961C305652E41064CD119B3E015DCEBDC1F2CE17A19DB013F474D0F324B4`.
 - Live rendered evidence finalized and `get_status` returned `CONFIRMED`. One initial verify transaction canceled with `NO_MAJORITY`; a retry finalized successfully.
 - A separate false claim about Example Domain’s page title settled to `CONTRADICTED` after live rendered evidence and consensus verification.
 - Live PINNED_TEXT submission and verification finalized; claim history records `CONSENSUS_VERIFIED: SUPPORTS`. The record-specific evidence label could not be read because the `get_evidence` RPC returned an HTML error response.
 - A `0.000001 GEN` rejected-payable call finalized and emitted a refund message of the same amount to the sender. Wallet balance was observed at `0xcf9a2775fe8f87ff5` before and after; contract balance was `0x0` after settlement.
 - A `0.000001 GEN` bounty finalized as `PAID`; `get_bounty` returned the evidence submitter wallet as winner. The payout receipt contains a same-value message to that wallet. A later replay attempt finalized; its validator execution receipts were errors after the bounty was already paid.
-- An unavailable-source probe for a reserved nonexistent `.example` host finalized as `UNDETERMINED` with `MAJORITY_DISAGREE`; it did not establish the expected unavailable classification.
+- The regression probe for an unavailable reserved `.example` host finalized, and a live `get_status` call returned `UNAVAILABLE`; see the new deployment evidence section for its transactions.
+- A live same-host `SUPERSEDES` relation finalized with an active edge. The claim moved from `CONFIRMED` to `CONTRADICTED`; the probe used an `httpbin.org` response reflecting a query-supplied record, so it verifies contract graph execution rather than publisher authority.
 
 ## Local result for the current source changes
 
-- `python -m pytest -q`: 58 passed (including GenLayer Direct Mode transaction tests).
+- `python -m pytest -q`: 65 passed (including GenLayer Direct Mode transaction tests).
+- `gltest tests --network localnet`: 65 passed.
 - `genvm-lint check contracts/provenance_engine.py`: 3 lint checks passed; validation passed.
 - `genvm-lint schema contracts/provenance_engine.py`: 14 methods (8 views and 6 writes).
 - Runtime pin: official docs' currently documented `py-genlayer` hash. The newer hash suggested by the installed linter (`5jyc…`) was tried; it fails schema loading because `allow_storage` is undefined in that candidate SDK.
-- Direct Mode includes exact-byte pinned-text and independent-render hashing, class-specific assurance behavior, changed-artifact identities, forged leader decision/hash/ID/URL-field rejection, malformed/unknown/wrong-type output, prompt injection, unavailable-source handling, support/contradiction disputes, graph target and lifecycle checks, URL admission, freshness boundaries, fixed beneficiary selection, rejected-payable return behavior, replay rejection, stale refund, contradictory refund, and unresolved timeout recovery.
+- Direct Mode includes exact-byte pinned-text and independent-render hashing, distinct observation/artifact IDs and alias-collision resistance, class-specific assurance behavior, changed-artifact identities, forged leader output rejection, malformed/unknown/wrong-type output, prompt injection, the full unavailable validator path, support/contradiction disputes, graph authority continuity and pinned-text rejection, graph target/history checks, graph-capacity isolation, oversized artifact fail-closed behavior, duplicate challenge rejection, URL admission, freshness boundaries, fixed beneficiary selection, rejected-payable return behavior, replay rejection, stale refund, contradictory refund, and unresolved timeout recovery.
 
 ## Release gates
 
@@ -34,8 +36,10 @@
 | Challenge behavior | LIMITED | It records only an already consensus-backed conflict; no bond, appeal state machine, or independent re-adjudication. |
 | Source independence | LIMITED | One support can confirm; publisher/syndication clustering is not implemented. |
 | Visual provenance | REMOVED | No visual API, field, or visual claim remains. |
-| Canonical Studionet deployment and source parity | PASS | Finalized deployment plus exact source read-back hash. |
-| Live evidence matrix | PARTIAL | Render confirmation, contradiction, and pinned-text history are recorded. Disputed aggregate state, graph edges, a conclusive unavailable-source result, prompt injection, and challenge still need finalized live receipts. |
+| Canonical Studionet deployment and source parity | PASS | Deployment and newline-normalized source parity recorded above. |
+| Unavailable-source consensus path | PASS live | Finalized verification and `get_status == UNAVAILABLE`. |
+| Claim graph and deterministic state | PARTIAL live | One finalized `SUPERSEDES` lifecycle observed; live `EXPIRES` and `RESTORES` remain untested. The test source reflected a query-supplied record. |
+| Live evidence matrix | PARTIAL | Render confirmation, contradiction, pinned-text history, unavailable classification, and one graph supersession are recorded. Prompt injection and challenge still need finalized live receipts. |
 | Three downstream use cases | DOCUMENTED | Illustrative integration patterns, not deployed integrations. |
 
 This is not a submission-ready declaration. The canonical contract is the 2026-09-27 deployment listed above; earlier deployments remain historical. Continue to keep each gate red or partial until its specified live evidence is recorded.
