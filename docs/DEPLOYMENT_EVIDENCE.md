@@ -1,6 +1,38 @@
-# Historical Studionet deployment evidence
+# Studionet deployment evidence
 
-> The transactions below prove behavior for the historical source SHA-256 `81B81B6E5CB57875236719D1A762791D94FA5C30C8ED0E24B92CC51C27AFBCF6` only. The current working tree has a different contract source hash, so this is not its canonical deployment evidence. A fresh deployment and live verification are still required.
+## Canonical deployment: final pushed source
+
+Commit `d35478517283377508b44521516355c67f82f6ff` on public `main` was deployed on Studionet (chain ID `61999`) at [0xbC3fE4d84CE9b9E57c491494De62dbD999Ca4aC2](https://explorer-studio.genlayer.com/address/0xbC3fE4d84CE9b9E57c491494De62dbD999Ca4aC2). Deployment transaction [0xe15faf459e161b7ba5d7e76267dbfd33ab37261674e31d99333de5473190cdec](https://explorer-studio.genlayer.com/tx/0xe15faf459e161b7ba5d7e76267dbfd33ab37261674e31d99333de5473190cdec) finalized with `MAJORITY_AGREE`. `genlayer code` read-back matched the committed 790-line `contracts/provenance_engine.py` byte-for-byte after newline normalization: SHA-256 `40A94B3192EBC5957620528714128D0295F4A81288E2AE8E33E1F354C41E4BEB`.
+
+The active signer was `my-studionet-wallet`, address `0xaffe15eec45b68835cc9e5b4ab85dd5deae8e70b`.
+
+### Rendered evidence and confirmation
+
+Claim `pe-final-20260927-01` was created in [0xec2697a5209826db0baa361e3c502e58e597f68708979cd311a8689a663bcf7e](https://explorer-studio.genlayer.com/tx/0xec2697a5209826db0baa361e3c502e58e597f68708979cd311a8689a663bcf7e). Evidence alias `pe-final-ev-01` for `https://example.com/` with relationship `SUPPORTS` was submitted in [0xb8bde35f4f889f72e8436d984c2c5cf524636e324cdf84762888e66af06c1a48](https://explorer-studio.genlayer.com/tx/0xb8bde35f4f889f72e8436d984c2c5cf524636e324cdf84762888e66af06c1a48). The first verify attempt, [0xd05fd163f1e5e316982f4cb367a8c23ad2a91a2610d161f5359234778a435e70](https://explorer-studio.genlayer.com/tx/0xd05fd163f1e5e316982f4cb367a8c23ad2a91a2610d161f5359234778a435e70), canceled with `NO_MAJORITY` and zero validator votes. Retrying the same verification produced finalized `MAJORITY_AGREE` in [0x22af452cceeca27dd9f5e2079c6f4003394b56ee05d99dbed06a2a98c75dd55c](https://explorer-studio.genlayer.com/tx/0x22af452cceeca27dd9f5e2079c6f4003394b56ee05d99dbed06a2a98c75dd55c). A live `get_status` call returned `CONFIRMED`.
+
+### Contradiction result
+
+Claim `pe-live-contradict-01` asserted that Example Domain’s homepage title is “Provenance Engine.” Claim creation finalized in [0xd26084fba0ce1aeee8bca0e319fa23bff5b9044e74a293a0d00ed63a48f4ef71](https://explorer-studio.genlayer.com/tx/0xd26084fba0ce1aeee8bca0e319fa23bff5b9044e74a293a0d00ed63a48f4ef71); rendered evidence from `https://example.com/` was submitted in [0x93ae32b1cd377e0849c6aa9e54f62c125b5a89c0477190df521e233d93360907](https://explorer-studio.genlayer.com/tx/0x93ae32b1cd377e0849c6aa9e54f62c125b5a89c0477190df521e233d93360907). Verification finalized in [0xe19a382d2d6f94aa3901b89e7a71dd6ab48558efffdb967d815e9f792e8cfca3](https://explorer-studio.genlayer.com/tx/0xe19a382d2d6f94aa3901b89e7a71dd6ab48558efffdb967d815e9f792e8cfca3); `get_status` returned `CONTRADICTED`. This tests a contradiction, not a disputed aggregate or challenge.
+
+### Unavailable-source attempt
+
+A claim and rendered evidence record were created for the DNS-reserved nonexistent `.example` host in [0x160f3a9352e8f2451b19d9633413c5f38c39f896c71daeb49697529aff9196a7](https://explorer-studio.genlayer.com/tx/0x160f3a9352e8f2451b19d9633413c5f38c39f896c71daeb49697529aff9196a7) and [0x9e75459db6796819214075b607b745576cd41cd57254bbb0a0c6c495104a7cc0](https://explorer-studio.genlayer.com/tx/0x9e75459db6796819214075b607b745576cd41cd57254bbb0a0c6c495104a7cc0). Verification [0x9db35843407d0bada4849a2ed4bb402dc53d80177ffc1b5ae03d2852d529cc92](https://explorer-studio.genlayer.com/tx/0x9db35843407d0bada4849a2ed4bb402dc53d80177ffc1b5ae03d2852d529cc92) finalized as `UNDETERMINED` with `MAJORITY_DISAGREE`; this is inconclusive and is not counted as a successful unavailable-source check.
+
+### Exact-byte pinned text
+
+The public `https://example.com/` response was fetched locally as 559 bytes and hashed to `ff67a9d764d6a2367a187734e697f6a53217db9a21c101d410a113ca871a299d`. PINNED_TEXT evidence alias `pe-final-pin-01` was submitted in [0xb9e32d405ab6b9d00e045eb57ef8ff74754b85563c3c144960fe5f79bf821c18](https://explorer-studio.genlayer.com/tx/0xb9e32d405ab6b9d00e045eb57ef8ff74754b85563c3c144960fe5f79bf821c18). Verification finalized in [0x3200ff072963bbcc9a06bb8bc98ce88f4ab9e96392949d0fc53d246b35871e46](https://explorer-studio.genlayer.com/tx/0x3200ff072963bbcc9a06bb8bc98ce88f4ab9e96392949d0fc53d246b35871e46); claim history records `CONSENSUS_VERIFIED` with `SUPPORTS`. A direct `get_evidence` read did not return a record because the RPC response was HTML, so the record-specific `TEXT_SUPPORTED` label is not independently captured here.
+
+### Rejected payable call and escrow
+
+An invalid bounty with `0.000001 GEN` attached was submitted in [0x686a5fbec04d13ac9752d079afbb8954c3ec70b6814f6afe013e1fa9288fbb80](https://explorer-studio.genlayer.com/tx/0x686a5fbec04d13ac9752d079afbb8954c3ec70b6814f6afe013e1fa9288fbb80). Its finalized receipt contains a refund message for `1000000000000` wei to the sender. The observed wallet balance was `0xcf9a2775fe8f87ff5` before and after the refund check; contract balance was `0x0` after settlement.
+
+A valid `0.000001 GEN` bounty deposit finalized in [0x9e284a46a164c4749c8e4d66c0eac71a93434c0100bc305effbf83f3be62171e](https://explorer-studio.genlayer.com/tx/0x9e284a46a164c4749c8e4d66c0eac71a93434c0100bc305effbf83f3be62171e). Payout finalized in [0x25ed70c9ec8f981ab3888f659bf2966a30b7503910dd9a2a552b474e29b932be](https://explorer-studio.genlayer.com/tx/0x25ed70c9ec8f981ab3888f659bf2966a30b7503910dd9a2a552b474e29b932be); the receipt contains a transfer message of the same amount to wallet `0xaffe15eec45b68835cc9e5b4ab85dd5deae8e70b`. `get_bounty` returned state `PAID` and the same wallet as winner. A second `claim_reward` call finalized in [0x8e7c65cdcd4050405ec25c8dcf2f3317f7e6154c81cddb19a3a2a5011b4d9545](https://explorer-studio.genlayer.com/tx/0x8e7c65cdcd4050405ec25c8dcf2f3317f7e6154c81cddb19a3a2a5011b4d9545); its validator execution receipts were errors while the bounty remained `PAID`, and no second payout message was present.
+
+These live checks do not cover contradiction/dispute, graph edges (`SUPERSEDES`, `EXPIRES`, `RESTORES`), unavailable sources, prompt injection, a challenge, a different payout beneficiary, or 30-day timeout settlement. They do not establish publisher authenticity or independence. See [release-candidate verification](RELEASE_CANDIDATE_VERIFICATION.md) for the remaining gates.
+
+## Historical deployments
+
+The transactions in the following sections prove behavior only for their listed historical source hashes. The canonical deployment and current evidence are documented above.
 
 ## Superseded pre-addendum checkpoint
 
@@ -31,7 +63,7 @@ The earlier deployed source passed:
 - `genvm-lint schema contracts/provenance_engine.py` — 12 methods found (6 views, 6 writes).
 - `gltest tests -v --network localnet` — 10 passed, including prompt injection, malformed validator output, challenge history, escrow structure, and duplicate identity checks.
 
-The current, undeployed working source SHA-256 is `40A94B3192EBC5957620528714128D0295F4A81288E2AE8E33E1F354C41E4BEB` (790 lines). It passes `python -m pytest -q` and `gltest tests -v --network localnet` with 58 tests, plus 3 GenVM lint checks and schema validation with 14 methods. Its live evidence, rejected-payable refund, and source-parity gates remain pending.
+The canonical deployed source SHA-256 is `40A94B3192EBC5957620528714128D0295F4A81288E2AE8E33E1F354C41E4BEB` (790 lines). It passes `python -m pytest -q` and `gltest tests -v --network localnet` with 58 tests, plus 3 GenVM lint checks and schema validation with 14 methods. The live evidence and escrow checks above cover several key flows; the remaining matrix is intentionally still marked partial.
 
 ## Superseded deployment
 

@@ -3,41 +3,51 @@
   "network": "studionet",
   "chain_id": 61999,
   "rpc": "https://studio.genlayer.com/api",
-  "canonical_status": "HISTORICAL_SOURCE_MISMATCH_PENDING_REDEPLOYMENT",
-  "active_contract_address": null,
+  "canonical_status": "DEPLOYED_LIVE_VALIDATION_INCOMPLETE",
+  "active_contract_address": "0xbC3fE4d84CE9b9E57c491494De62dbD999Ca4aC2",
   "working_tree_source_sha256": "40A94B3192EBC5957620528714128D0295F4A81288E2AE8E33E1F354C41E4BEB",
-  "last_deployed_source_matches_working_tree": false,
-  "contract_address": "0xA77018a83C4d353eF31E07B59A2Ff50153e1264a",
-  "deployment_transaction": "0x6e2689f9e87aa273366766dbc255bf9046623143fb7657b7d88e8fe4a7786f07",
+  "last_deployed_source_matches_working_tree": true,
+  "contract_address": "0xbC3fE4d84CE9b9E57c491494De62dbD999Ca4aC2",
+  "deployment_transaction": "0xe15faf459e161b7ba5d7e76267dbfd33ab37261674e31d99333de5473190cdec",
   "source_file": "contracts/provenance_engine.py",
-  "source_sha256": "81B81B6E5CB57875236719D1A762791D94FA5C30C8ED0E24B92CC51C27AFBCF6",
-  "deployed_at": "2026-09-26",
+  "source_sha256": "40A94B3192EBC5957620528714128D0295F4A81288E2AE8E33E1F354C41E4BEB",
+  "deployed_at": "2026-09-27",
   "deployer": {
-    "account": "bradbury-e2e",
-    "address": "0x3A3168d67A110dE79461939047a8f7334ff1423d"
+    "account": "my-studionet-wallet",
+    "address": "0xaffe15eec45b68835cc9e5b4ab85dd5deae8e70b"
   },
   "verification": {
-    "method": "genlayer receipt",
+    "method": "genlayer receipt plus genlayer code readback",
     "result": "FINALIZED",
     "consensus_result": "MAJORITY_AGREE",
-    "receipt_transaction_hash": "0x6e2689f9e87aa273366766dbc255bf9046623143fb7657b7d88e8fe4a7786f07"
+    "receipt_transaction_hash": "0xe15faf459e161b7ba5d7e76267dbfd33ab37261674e31d99333de5473190cdec",
+    "deployed_source_sha256_matches": true
   },
   "live_tests": {
-    "claim_create": "0x97039aa56f4213b162312df1395339847b6ffaa69c972ab4cc137f9d8ed60275",
-    "evidence_submit": "0x3b7ad51d0647f10b46dfdf7bb4c3f1ca6086e972b7ee22681b0bca26578e38f4",
-    "consensus_verify": "0x36942f77e2737927002f2cbecb02f78ba30566f16caca137f8a2c2b8fa473445",
-    "confirmed_claim_bounty_deposit": "0x69c86ae417940079084cf1ab8374f0024508b678778ff252f1c17a08f182aafb",
-    "confirmed_claim_bounty_payout": "0xc6e6e1c43eb0088c2706979844c0d3413c10a5b3faed44893f356be7eb1b5307",
-    "confirmed_claim_payout_transfer": "0x2bc801cb1848c6cdc52d0867e27cf2c5aa75d3191982c7310050e060197fb470",
-    "replay_rejected": "0x1903ae77b28568d4f46716a191d2ab0e1dec4462fa51b02675d7067786fe99a0",
-    "refund_claim_create": "0xaf90e3597ea4a3b8546f816c732b6aa5c63fb306b0cb73de67844a0c9eed3aa3",
-    "refund_evidence_submit": "0xef806c19fc6daa55847705c0938767ac9fcb3af2cb4043cb746d51769c0dfb98",
-    "refund_claim_verify": "0x7784b1b234ee6d65f06374f916b82b049854ff109fd7aff58ae1f367a6e6f663",
-    "refund_bounty_deposit": "0xcacf92cb7261bf8a68b52dbe83e54a972fe6c60171e77e6e8f6d03a9bdbef450",
-    "refund_settlement": "0x5d873621702dc25c017cf0aba32416c04af6f6fa0186ab355486d29f8ebf8bd6",
-    "refund_transfer": "0xf92b7080c46412d7b3496d9200be8f44cc61f0e21cbc23dbf2105d555b4daae1"
+    "claim_create": "0xec2697a5209826db0baa361e3c502e58e597f68708979cd311a8689a663bcf7e",
+    "rendered_evidence_submit": "0xb8bde35f4f889f72e8436d984c2c5cf524636e324cdf84762888e66af06c1a48",
+    "rendered_verify_first_attempt_no_majority_canceled": "0xd05fd163f1e5e316982f4cb367a8c23ad2a91a2610d161f5359234778a435e70",
+    "rendered_verify_finalized": "0x22af452cceeca27dd9f5e2079c6f4003394b56ee05d99dbed06a2a98c75dd55c",
+    "pinned_text_submit": "0xb9e32d405ab6b9d00e045eb57ef8ff74754b85563c3c144960fe5f79bf821c18",
+    "pinned_text_verify": "0x3200ff072963bbcc9a06bb8bc98ce88f4ab9e96392949d0fc53d246b35871e46",
+    "rejected_payable_refund": "0x686a5fbec04d13ac9752d079afbb8954c3ec70b6814f6afe013e1fa9288fbb80",
+    "bounty_deposit": "0x9e284a46a164c4749c8e4d66c0eac71a93434c0100bc305effbf83f3be62171e",
+    "bounty_payout": "0x25ed70c9ec8f981ab3888f659bf2966a30b7503910dd9a2a552b474e29b932be",
+    "bounty_replay_attempt": "0x8e7c65cdcd4050405ec25c8dcf2f3317f7e6154c81cddb19a3a2a5011b4d9545",
+    "contradiction_claim_create": "0xd26084fba0ce1aeee8bca0e319fa23bff5b9044e74a293a0d00ed63a48f4ef71",
+    "contradiction_evidence_submit": "0x93ae32b1cd377e0849c6aa9e54f62c125b5a89c0477190df521e233d93360907",
+    "contradiction_verify": "0xe19a382d2d6f94aa3901b89e7a71dd6ab48558efffdb967d815e9f792e8cfca3",
+    "unavailable_claim_create": "0x160f3a9352e8f2451b19d9633413c5f38c39f896c71daeb49697529aff9196a7",
+    "unavailable_evidence_submit": "0x9e75459db6796819214075b607b745576cd41cd57254bbb0a0c6c495104a7cc0",
+    "unavailable_verify_undetermined": "0x9db35843407d0bada4849a2ed4bb402dc53d80177ffc1b5ae03d2852d529cc92"
   },
   "superseded_deployments": [
+    {
+      "contract_address": "0xA77018a83C4d353eF31E07B59A2Ff50153e1264a",
+      "deployment_transaction": "0x6e2689f9e87aa273366766dbc255bf9046623143fb7657b7d88e8fe4a7786f07",
+      "source_sha256": "81B81B6E5CB57875236719D1A762791D94FA5C30C8ED0E24B92CC51C27AFBCF6",
+      "reason": "Superseded by the canonical 2026-09-27 deployment, which matches the final pushed source."
+    },
     {
       "contract_address": "0x2827dB51F877691e0001De9Fc8A29e3Ba1Ea69CA",
       "deployment_transaction": "0x9282ab096a2986b8f8d358742dbf0df065606a01a6f11bf3c6735b921f11f10e",
@@ -50,5 +60,20 @@
       "source_sha256": "A75B16DA0ED3449D1036D36D5E6B4A9581B50BC7B49787B066E41B476FEF1C8E",
       "reason": "Superseded after a live verify_claim transaction exposed fenced JSON output handling; corrected source is deployed at the current address."
     }
-  ]
+  ],
+  "source_lines": 790,
+  "live_observations": {
+    "rendered_claim_status": "CONFIRMED",
+    "pinned_text_history": "CONSENSUS_VERIFIED: SUPPORTS",
+    "pinned_text_record_label": "Not captured; the get_evidence RPC read returned an HTML error response.",
+    "rejected_payable_value_wei": "1000000000000",
+    "rejected_payable_refund_message": "1000000000000 wei to the sender wallet",
+    "wallet_balance_before_and_after_refund_and_payout": "0xcf9a2775fe8f87ff5",
+    "contract_balance_after_refund_and_payout": "0x0",
+    "bounty_state_after_settlement": "PAID",
+    "bounty_winner": "0xaffe15eec45b68835cc9e5b4ab85dd5deae8e70b",
+    "replay_attempt": "FINALIZED MAJORITY_AGREE; validator execution receipts were ERROR after the bounty was already PAID.",
+    "contradiction_claim_status": "CONTRADICTED",
+    "unavailable_source_result": "UNDETERMINED with MAJORITY_DISAGREE; no UNAVAILABLE state was confirmed."
+  }
 }

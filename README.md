@@ -45,7 +45,7 @@ genvm-lint schema contracts/provenance_engine.py
 gltest tests -v --network localnet
 ```
 
-Current local test output is tracked in [release-candidate verification](docs/RELEASE_CANDIDATE_VERIFICATION.md). A source change makes the prior deployment non-parity evidence until a new contract is deployed and live-tested. Deployment instructions are in [DEPLOYMENT.md](DEPLOYMENT.md).
+The canonical Studionet deployment is [0xbC3fE4d84CE9b9E57c491494De62dbD999Ca4aC2](https://explorer-studio.genlayer.com/address/0xbC3fE4d84CE9b9E57c491494De62dbD999Ca4aC2), deployed from the public `main` commit recorded in [deployment evidence](docs/DEPLOYMENT_EVIDENCE.md). The deployed source hash matches the 790-line source. The live checks confirm claim creation, rendered evidence, a pinned-text verification history, rejected-payable refund request, payout to the evidence submitter, and a replay attempt. Remaining live gates are tracked in [release-candidate verification](docs/RELEASE_CANDIDATE_VERIFICATION.md); do not treat the project as submission-ready until they are closed. Deployment details are in [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## Example consumers
 
