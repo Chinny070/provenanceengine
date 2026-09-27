@@ -3,46 +3,52 @@
   "network": "studionet",
   "chain_id": 61999,
   "rpc": "https://studio.genlayer.com/api",
-  "canonical_status": "DEPLOYED_LIVE_VALIDATION_INCOMPLETE",
-  "active_contract_address": "0x4512b07d637Fe42D278B25dd778a9a1a99A38Dbb",
-  "working_tree_source_sha256": "F945961C305652E41064CD119B3E015DCEBDC1F2CE17A19DB013F474D0F324B4",
+  "canonical_status": "DEPLOYED_HARDENED_LIVE_VALIDATION_INCOMPLETE",
+  "active_contract_address": "0xD745F2093De04c4C3c9a4648981D5b6d880163d0",
+  "working_tree_source_sha256": "ED6D31F4668D5E6BB9494E5F1266F79157F968AAF904FD1A1597188A70083E41",
   "last_deployed_source_matches_working_tree": true,
-  "contract_address": "0x4512b07d637Fe42D278B25dd778a9a1a99A38Dbb",
-  "deployment_transaction": "0x809920a2feac4b4ce40d58dc27f9fde594d2eb485686446c6e306e3e0c395f97",
+  "contract_address": "0xD745F2093De04c4C3c9a4648981D5b6d880163d0",
+  "deployment_transaction": "0xfaff041e78eb4e25b574010a3694e8c35fa8b9d22a871a5a93eb6f14218b4617",
   "source_file": "contracts/provenance_engine.py",
-  "source_sha256": "F945961C305652E41064CD119B3E015DCEBDC1F2CE17A19DB013F474D0F324B4",
+  "source_sha256": "ED6D31F4668D5E6BB9494E5F1266F79157F968AAF904FD1A1597188A70083E41",
   "deployed_at": "2026-09-27",
   "deployer": {
     "account": "my-studionet-wallet",
     "address": "0xaffe15eec45b68835cc9e5b4ab85dd5deae8e70b"
   },
   "verification": {
-    "method": "genlayer receipt plus genlayer code readback",
+    "method": "genlayer deployment receipt plus genlayer code readback",
     "result": "FINALIZED",
     "consensus_result": "MAJORITY_AGREE",
-    "receipt_transaction_hash": "0x809920a2feac4b4ce40d58dc27f9fde594d2eb485686446c6e306e3e0c395f97",
-    "deployed_source_sha256_matches": true
+    "receipt_transaction_hash": "0xfaff041e78eb4e25b574010a3694e8c35fa8b9d22a871a5a93eb6f14218b4617",
+    "deployed_source_sha256_matches": true,
+    "readback_sha256": "ED6D31F4668D5E6BB9494E5F1266F79157F968AAF904FD1A1597188A70083E41",
+    "normalization": "line endings normalized to LF before SHA-256"
   },
   "live_tests": {
-    "claim_create": "0xec2697a5209826db0baa361e3c502e58e597f68708979cd311a8689a663bcf7e",
-    "rendered_evidence_submit": "0xb8bde35f4f889f72e8436d984c2c5cf524636e324cdf84762888e66af06c1a48",
-    "rendered_verify_first_attempt_no_majority_canceled": "0xd05fd163f1e5e316982f4cb367a8c23ad2a91a2610d161f5359234778a435e70",
-    "rendered_verify_finalized": "0x22af452cceeca27dd9f5e2079c6f4003394b56ee05d99dbed06a2a98c75dd55c",
-    "pinned_text_submit": "0xb9e32d405ab6b9d00e045eb57ef8ff74754b85563c3c144960fe5f79bf821c18",
-    "pinned_text_verify": "0x3200ff072963bbcc9a06bb8bc98ce88f4ab9e96392949d0fc53d246b35871e46",
-    "rejected_payable_refund": "0x686a5fbec04d13ac9752d079afbb8954c3ec70b6814f6afe013e1fa9288fbb80",
-    "bounty_deposit": "0x9e284a46a164c4749c8e4d66c0eac71a93434c0100bc305effbf83f3be62171e",
-    "bounty_payout": "0x25ed70c9ec8f981ab3888f659bf2966a30b7503910dd9a2a552b474e29b932be",
-    "bounty_replay_attempt": "0x8e7c65cdcd4050405ec25c8dcf2f3317f7e6154c81cddb19a3a2a5011b4d9545",
-    "contradiction_claim_create": "0xd26084fba0ce1aeee8bca0e319fa23bff5b9044e74a293a0d00ed63a48f4ef71",
-    "contradiction_evidence_submit": "0x93ae32b1cd377e0849c6aa9e54f62c125b5a89c0477190df521e233d93360907",
-    "contradiction_verify": "0xe19a382d2d6f94aa3901b89e7a71dd6ab48558efffdb967d815e9f792e8cfca3",
-    "unavailable_claim_create": "0x160f3a9352e8f2451b19d9633413c5f38c39f896c71daeb49697529aff9196a7",
-    "unavailable_evidence_submit": "0x9e75459db6796819214075b607b745576cd41cd57254bbb0a0c6c495104a7cc0",
-    "unavailable_verify_undetermined": "0x9db35843407d0bada4849a2ed4bb402dc53d80177ffc1b5ae03d2852d529cc92",
-    "unavailable_claim_create_final": "0xf2ac4c41bffcd2b49f6798f47ac5f5385caf6645bac0d0f981b26ff5c8f743d6",
-    "unavailable_evidence_submit_final": "0x90badb04db1f61b88e678f8b235d1838ae3604d2d8b2ceb07531ba0214d860c7",
-    "unavailable_verify_final": "0x09ea074d085d82afb089f8dc96c24ae353a1e98ea8c40e050e16f3760137e3cb"
+    "capacity_smoke_claim_create": "0xc64291a2802d7ab43a798c586e48674217e53a1165dcf588d0b240719c4491cf",
+    "capacity_smoke_evidence_submit": "0x5b55647c01bb3701367a1ed92f0aa3d25579825711af0554e424ed368cc8be1c",
+    "capacity_smoke_verify": "0xeeeaae91995c76e11aa5b5e71490766f14e4dc8b66ef3500abf7fad92dbe295b",
+    "capacity_smoke_status": "CONFIRMED",
+    "capacity_smoke_passport_status": "CONFIRMED",
+    "capacity_smoke_history_count": 3,
+    "one_wei_bounty_create": "0x4b38a753ff12bbb434742f34f0e5f99b0d68d402aecfcd07f48e37ae30244a99",
+    "one_wei_bounty_settlement": "0x1c857f6da31a0fc51a9a6656bdebb416f79a74546f03472ca7e0b8445bcaa288",
+    "one_wei_bounty_state": "PAID",
+    "one_wei_bounty_winner": "0xaffe15eec45b68835cc9e5b4ab85dd5deae8e70b",
+    "one_wei_bounty_amount_remaining": "0",
+    "one_wei_bounty_transfer_receipt": true,
+    "canonical_stale_evidence_test_pending": {
+      "claim_create": "0x9c1e7392bb72ec0b1b94cbd5dd9a17604187634b005b8bcaf62b0215e3db4aff",
+      "evidence_submit": "0x414c2e4cbc752d3b2a239cfd6cb1b6fc1f5fd3e565d4063dae5cf5332515a962",
+      "verify": "0xc86e44e2f4bd1ce6d4a5fec3b0f4d1cf23d15dc50add1e4208db513bb99dae2d",
+      "bounty_deposit": "0x8bca3c75f2e48523eb5eb0c3e2ab412df157281eec178bedda3341d875c5cd68",
+      "bounty_state": "OPEN",
+      "amount_wei": "1",
+      "production_stale_status_and_refund": "PENDING_REAL_TIME_FRESHNESS_THRESHOLD",
+      "history_timestamp": 1790542056,
+      "safe_to_test_after_utc": "2026-10-04T20:47:37Z"
+    }
   },
   "separate_timeout_probe": {
     "contract_address": "0x3b36FC39Bb3Da0371648Dd1f7d32976e991d2114",
@@ -59,51 +65,16 @@
     "elapsed_seconds": 172,
     "result": "REFUNDED",
     "refund_recipient": "0xaffe15eec45b68835cc9e5b4ab85dd5deae8e70b",
-    "remaining_amount_wei": "0"
-  },
-  "production_steward_regressions": {
-    "pinned_digest_mismatch": {
-      "claim_create": "0x985bee089edc78e9bd6611547b4e57ffdd69f5c2c3b5e46c2c4ddf95ceb67534",
-      "evidence_submit": "0x40ce5bf5f122f8b8840924798323c2c79fb9898cdfa793dc228d9d00064380e8",
-      "verify": "0xc4c9529f16a02769a435ca4ab39297fec792067e4d2819a21f2cd41315f120c5",
-      "history_decision": "INTEGRITY_MISMATCH",
-      "live_status": "UNAVAILABLE",
-      "details_readback": "get_evidence RPC request timed out"
-    },
-    "caller_relationship_conflict": {
-      "claim_create": "0x23f97969f8ee3dc8467972cef44f8dce7155aa2d9037c35022aba0618d4361ee",
-      "evidence_submit": "0x5a6418a2d8d051557a53a89eecfd5f85abc9990b19a62264775c45ea10ebee6f",
-      "verify": "0x4658641b7bce4fa185b6106488fa7e50844f3d8d29be62c93ded901046db9eb9",
-      "caller_relationship": "CONTRADICTS",
-      "consensus_decision": "SUPPORTS",
-      "live_status": "CONFIRMED"
-    },
-    "evidence_free_challenge": {
-      "attempt": "0xefbd4b931be3fa31b4d101019ab0cd80d483b9cc63691da152295b4fd56cc5a3",
-      "leader_execution": "ERROR",
-      "status_after": "CONFIRMED",
-      "challenged_history_entry_added": false
-    },
-    "cross_wallet_bounty_beneficiary": {
-      "bounty_create": "0xf0b504044eca9264fa1de97a0804f6a43ba9faacc7bff7ed138a6e7f88b820b7",
-      "settlement": "0x34dd7115509c5b94026734100641452879790750f954e365d3a3b66638fea32b",
-      "sponsor_and_caller": "0xd55ad3274e615c0ba30b3aca38ecb76cbca7ea68",
-      "evidence_submitter_and_winner": "0xaffe15eec45b68835cc9e5b4ab85dd5deae8e70b",
-      "state": "PAID",
-      "amount_remaining_wei": "0"
-    },
-    "canonical_stale_evidence_test_pending": {
-      "claim_create": "0xd2ffcf240ba22a5d5bc4980745e06e56ddd346b6a59d78791b1ef832d021888e",
-      "evidence_submit": "0x6d8ad88791d329ad4e883b2ffccf5e090c74ba2e71548120634b1326fbc2792a",
-      "verify": "0x0e491d83b8a5b0b6445cf5433d610c04c7fc179edc624ab615ab360de19de70e",
-      "bounty_deposit": "0xecac45f819d5673a25ea12340bb286796fd14b4b4386e1907cdaafb28fd184f7",
-      "verification_timestamp": 1790536083,
-      "stale_after_utc": "2026-10-04T19:08:04Z",
-      "bounty_state": "OPEN",
-      "amount_wei": "1"
-    }
+    "remaining_amount_wei": "0",
+    "applies_to": "Superseded predecessor source at 0x4512b07d637Fe42D278B25dd778a9a1a99A38Dbb; not the hardened canonical source."
   },
   "superseded_deployments": [
+    {
+      "contract_address": "0x4512b07d637Fe42D278B25dd778a9a1a99A38Dbb",
+      "deployment_transaction": "0x809920a2feac4b4ce40d58dc27f9fde594d2eb485686446c6e306e3e0c395f97",
+      "source_sha256": "F945961C305652E41064CD119B3E015DCEBDC1F2CE17A19DB013F474D0F324B4",
+      "reason": "Superseded by the 2026-09-27 resource-isolated capacity-hardening deployment at 0xD745F2093De04c4C3c9a4648981D5b6d880163d0. Historical live tests at the old address apply only to its prior source."
+    },
     {
       "contract_address": "0xA77018a83C4d353eF31E07B59A2Ff50153e1264a",
       "deployment_transaction": "0x6e2689f9e87aa273366766dbc255bf9046623143fb7657b7d88e8fe4a7786f07",
@@ -123,8 +94,113 @@
       "reason": "Superseded after a live verify_claim transaction exposed fenced JSON output handling; corrected source is deployed at the current address."
     }
   ],
-  "source_lines": 829,
-  "live_observations": {
+  "source_lines": 889,
+  "previous_canonical_deployment": {
+    "contract_address": "0x4512b07d637Fe42D278B25dd778a9a1a99A38Dbb",
+    "deployment_transaction": "0x809920a2feac4b4ce40d58dc27f9fde594d2eb485686446c6e306e3e0c395f97",
+    "source_sha256": "F945961C305652E41064CD119B3E015DCEBDC1F2CE17A19DB013F474D0F324B4",
+    "source_lines": 829,
+    "live_tests": {
+      "claim_create": "0xec2697a5209826db0baa361e3c502e58e597f68708979cd311a8689a663bcf7e",
+      "rendered_evidence_submit": "0xb8bde35f4f889f72e8436d984c2c5cf524636e324cdf84762888e66af06c1a48",
+      "rendered_verify_first_attempt_no_majority_canceled": "0xd05fd163f1e5e316982f4cb367a8c23ad2a91a2610d161f5359234778a435e70",
+      "rendered_verify_finalized": "0x22af452cceeca27dd9f5e2079c6f4003394b56ee05d99dbed06a2a98c75dd55c",
+      "pinned_text_submit": "0xb9e32d405ab6b9d00e045eb57ef8ff74754b85563c3c144960fe5f79bf821c18",
+      "pinned_text_verify": "0x3200ff072963bbcc9a06bb8bc98ce88f4ab9e96392949d0fc53d246b35871e46",
+      "rejected_payable_refund": "0x686a5fbec04d13ac9752d079afbb8954c3ec70b6814f6afe013e1fa9288fbb80",
+      "bounty_deposit": "0x9e284a46a164c4749c8e4d66c0eac71a93434c0100bc305effbf83f3be62171e",
+      "bounty_payout": "0x25ed70c9ec8f981ab3888f659bf2966a30b7503910dd9a2a552b474e29b932be",
+      "bounty_replay_attempt": "0x8e7c65cdcd4050405ec25c8dcf2f3317f7e6154c81cddb19a3a2a5011b4d9545",
+      "contradiction_claim_create": "0xd26084fba0ce1aeee8bca0e319fa23bff5b9044e74a293a0d00ed63a48f4ef71",
+      "contradiction_evidence_submit": "0x93ae32b1cd377e0849c6aa9e54f62c125b5a89c0477190df521e233d93360907",
+      "contradiction_verify": "0xe19a382d2d6f94aa3901b89e7a71dd6ab48558efffdb967d815e9f792e8cfca3",
+      "unavailable_claim_create": "0x160f3a9352e8f2451b19d9633413c5f38c39f896c71daeb49697529aff9196a7",
+      "unavailable_evidence_submit": "0x9e75459db6796819214075b607b745576cd41cd57254bbb0a0c6c495104a7cc0",
+      "unavailable_verify_undetermined": "0x9db35843407d0bada4849a2ed4bb402dc53d80177ffc1b5ae03d2852d529cc92",
+      "unavailable_claim_create_final": "0xf2ac4c41bffcd2b49f6798f47ac5f5385caf6645bac0d0f981b26ff5c8f743d6",
+      "unavailable_evidence_submit_final": "0x90badb04db1f61b88e678f8b235d1838ae3604d2d8b2ceb07531ba0214d860c7",
+      "unavailable_verify_final": "0x09ea074d085d82afb089f8dc96c24ae353a1e98ea8c40e050e16f3760137e3cb"
+    },
+    "production_steward_regressions": {
+      "pinned_digest_mismatch": {
+        "claim_create": "0x985bee089edc78e9bd6611547b4e57ffdd69f5c2c3b5e46c2c4ddf95ceb67534",
+        "evidence_submit": "0x40ce5bf5f122f8b8840924798323c2c79fb9898cdfa793dc228d9d00064380e8",
+        "verify": "0xc4c9529f16a02769a435ca4ab39297fec792067e4d2819a21f2cd41315f120c5",
+        "history_decision": "INTEGRITY_MISMATCH",
+        "live_status": "UNAVAILABLE",
+        "details_readback": "get_evidence RPC request timed out"
+      },
+      "caller_relationship_conflict": {
+        "claim_create": "0x23f97969f8ee3dc8467972cef44f8dce7155aa2d9037c35022aba0618d4361ee",
+        "evidence_submit": "0x5a6418a2d8d051557a53a89eecfd5f85abc9990b19a62264775c45ea10ebee6f",
+        "verify": "0x4658641b7bce4fa185b6106488fa7e50844f3d8d29be62c93ded901046db9eb9",
+        "caller_relationship": "CONTRADICTS",
+        "consensus_decision": "SUPPORTS",
+        "live_status": "CONFIRMED"
+      },
+      "evidence_free_challenge": {
+        "attempt": "0xefbd4b931be3fa31b4d101019ab0cd80d483b9cc63691da152295b4fd56cc5a3",
+        "leader_execution": "ERROR",
+        "status_after": "CONFIRMED",
+        "challenged_history_entry_added": false
+      },
+      "cross_wallet_bounty_beneficiary": {
+        "bounty_create": "0xf0b504044eca9264fa1de97a0804f6a43ba9faacc7bff7ed138a6e7f88b820b7",
+        "settlement": "0x34dd7115509c5b94026734100641452879790750f954e365d3a3b66638fea32b",
+        "sponsor_and_caller": "0xd55ad3274e615c0ba30b3aca38ecb76cbca7ea68",
+        "evidence_submitter_and_winner": "0xaffe15eec45b68835cc9e5b4ab85dd5deae8e70b",
+        "state": "PAID",
+        "amount_remaining_wei": "0"
+      },
+      "canonical_stale_evidence_test_pending": {
+        "claim_create": "0xd2ffcf240ba22a5d5bc4980745e06e56ddd346b6a59d78791b1ef832d021888e",
+        "evidence_submit": "0x6d8ad88791d329ad4e883b2ffccf5e090c74ba2e71548120634b1326fbc2792a",
+        "verify": "0x0e491d83b8a5b0b6445cf5433d610c04c7fc179edc624ab615ab360de19de70e",
+        "bounty_deposit": "0xecac45f819d5673a25ea12340bb286796fd14b4b4386e1907cdaafb28fd184f7",
+        "verification_timestamp": 1790536083,
+        "stale_after_utc": "2026-10-04T19:08:04Z",
+        "bounty_state": "OPEN",
+        "amount_wei": "1"
+      }
+    },
+    "live_observations": {
+      "rendered_claim_status": "CONFIRMED",
+      "pinned_text_history": "CONSENSUS_VERIFIED: SUPPORTS",
+      "pinned_text_record_label": "Not captured; the get_evidence RPC read returned an HTML error response.",
+      "rejected_payable_value_wei": "1000000000000",
+      "rejected_payable_refund_message": "1000000000000 wei to the sender wallet",
+      "wallet_balance_before_and_after_refund_and_payout": "0xcf9a2775fe8f87ff5",
+      "contract_balance_after_refund_and_payout": "0x0",
+      "bounty_state_after_settlement": "PAID",
+      "bounty_winner": "0xaffe15eec45b68835cc9e5b4ab85dd5deae8e70b",
+      "replay_attempt": "FINALIZED MAJORITY_AGREE; validator execution receipts were ERROR after the bounty was already PAID.",
+      "contradiction_claim_status": "CONTRADICTED",
+      "unavailable_source_result": "UNAVAILABLE; finalized consensus result and live get_status read recorded in docs/DEPLOYMENT_EVIDENCE.md."
+    },
+    "status": "SUPERSEDED_BY_CAPACITY_HARDENING",
+    "superseded_at": "2026-09-27"
+  },
+  "capacity_hardening": {
+    "claims_per_creator_address": 64,
+    "evidence_per_claim": 128,
+    "external_evidence_per_claim": 32,
+    "external_evidence_per_submitter_per_claim": 16,
+    "creator_reserved_evidence_slots": 96,
+    "history_per_claim": 260,
+    "graph_edges_per_claim": 128,
+    "open_bounties_per_sponsor_claim": 8,
+    "global_lifetime_caps": false,
+    "indexes": "claim-scoped TreeMap indexes; no unrelated-state scans in status, passport, history, or settlement",
+    "direct_mode_tests": [
+      "test_creator_claim_quota_is_scoped_and_cannot_exhaust_global_claim_capacity",
+      "test_evidence_spam_cannot_consume_claim_owners_reserved_capacity",
+      "test_full_former_global_quotas_do_not_block_new_users",
+      "test_one_sponsor_cannot_consume_another_sponsors_bounty_quota",
+      "test_status_passport_and_settlement_execute_at_maximum_claim_state"
+    ],
+    "sybil_limit": "Quotas are address-scoped and can be bypassed by a user controlling multiple wallets."
+  },
+  "previous_canonical_live_observations": {
     "rendered_claim_status": "CONFIRMED",
     "pinned_text_history": "CONSENSUS_VERIFIED: SUPPORTS",
     "pinned_text_record_label": "Not captured; the get_evidence RPC read returned an HTML error response.",
@@ -137,5 +213,14 @@
     "replay_attempt": "FINALIZED MAJORITY_AGREE; validator execution receipts were ERROR after the bounty was already PAID.",
     "contradiction_claim_status": "CONTRADICTED",
     "unavailable_source_result": "UNAVAILABLE; finalized consensus result and live get_status read recorded in docs/DEPLOYMENT_EVIDENCE.md."
+  },
+  "live_observations": {
+    "capacity_smoke_claim_status": "CONFIRMED",
+    "capacity_smoke_passport_status": "CONFIRMED",
+    "capacity_smoke_history_count": 3,
+    "settled_test_bounty_state": "PAID",
+    "settled_test_bounty_winner": "0xaffe15eec45b68835cc9e5b4ab85dd5deae8e70b",
+    "settled_test_bounty_amount_wei": "0",
+    "staged_freshness_test_status": "FRESH at verification; stale check and refund pending 2026-10-04T20:47:37Z"
   }
 }

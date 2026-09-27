@@ -48,6 +48,193 @@ def test_duplicate_claim_id_rejected(direct_vm, direct_deploy):
         _create_claim(contract)
 
 
+def test_creator_claim_quota_is_scoped_and_cannot_exhaust_global_claim_capacity(direct_vm, direct_deploy):
+    contract = direct_deploy(CONTRACT)
+    address_type = type(contract.owner)
+    creators = [address_type("0x%040x" % index) for index in range(1, 5)]
+    for creator_index, creator in enumerate(creators):
+        direct_vm.sender = creator
+        for claim_index in range(64):
+            contract.create_claim("quota-%d-%d" % (creator_index, claim_index), "A scoped claim.")
+    assert len(contract.claims) == 256
+    newcomer = address_type("0x00000000000000000000000000000000000000ff")
+    direct_vm.sender = newcomer
+    contract.create_claim("claim-after-former-global-cap", "A new user's claim.")
+    assert len(contract.claims) == 257
+    for claim_index in range(63):
+        contract.create_claim("newcomer-%d" % claim_index, "Within this creator's quota.")
+    with direct_vm.expect_revert("creator claim quota reached"):
+        contract.create_claim("newcomer-over-quota", "This creator alone reached its quota.")
+    another_user = address_type("0x0000000000000000000000000000000000000100")
+    direct_vm.sender = another_user
+    contract.create_claim("another-user-still-admitted", "Another creator remains unaffected.")
+
+
+def test_evidence_spam_cannot_consume_claim_owners_reserved_capacity(direct_vm, direct_deploy):
+    contract = direct_deploy(CONTRACT)
+    owner = contract.owner
+    _create_claim(contract)
+    address_type = type(owner)
+    attacker = address_type("0x00000000000000000000000000000000000000a1")
+    other = address_type("0x00000000000000000000000000000000000000a2")
+    direct_vm.sender = attacker
+    for index in range(16):
+        contract.submit_evidence("attacker-%d" % index, "claim-1", URL, "SUPPORTS")
+    with direct_vm.expect_revert("submitter evidence quota reached"):
+        contract.submit_evidence("attacker-over-quota", "claim-1", URL, "SUPPORTS")
+    direct_vm.sender = other
+    for index in range(16):
+        contract.submit_evidence("other-%d" % index, "claim-1", URL, "SUPPORTS")
+    assert int(contract.claims[contract.claim_index["claim-1"]].evidence_count) == 32
+    with direct_vm.expect_revert("external evidence quota reached"):
+        contract.submit_evidence("third-party-over-shared-limit", "claim-1", URL, "SUPPORTS")
+    direct_vm.sender = owner
+    for index in range(96):
+        contract.submit_evidence("owner-%d" % index, "claim-1", URL, "SUPPORTS")
+    assert int(contract.get_claim("claim-1").evidence_count) == 128
+    assert contract.get_evidence("owner-95").verification == "PENDING"
+    direct_vm.sender = attacker
+    contract.create_claim("attacker-own-claim", "The attacker can still use its own scope.")
+
+
+def test_full_former_global_quotas_do_not_block_new_users(direct_vm, direct_deploy):
+    direct_vm.warp("2026-01-01T00:00:00Z")
+    contract = direct_deploy(CONTRACT)
+    address_type = type(contract.owner)
+    creators = [address_type("0x%040x" % index) for index in range(1, 5)]
+    for creator_index, creator in enumerate(creators):
+        direct_vm.sender = creator
+        count = 64 if creator_index < 3 else 63
+        for claim_index in range(count):
+            contract.create_claim("former-cap-%d-%d" % (creator_index, claim_index), "Existing scoped claim.")
+    direct_vm.sender = creators[3]
+    _create_claim(contract, "seed-claim")
+    assert len(contract.claims) == 256
+
+    direct_vm.sender = creators[3]
+    _mock_verification(direct_vm, "SUPPORTS")
+    contract.submit_evidence("seed-old", "seed-claim", URL, "SUPPORTS")
+    contract.verify_claim("seed-claim", "seed-old")
+    direct_vm.clear_mocks()
+    _mock_verification(direct_vm, "INSUFFICIENT", True, UPDATED_HTML, "EXPIRES")
+    contract.submit_evidence("seed-new", "seed-claim", URL, "EXPIRES", "RENDERED_WEB", "NONE", "seed-old")
+    contract.verify_claim("seed-claim", "seed-new")
+
+    # Model a deployment whose former global lifetime arrays have already been consumed.
+    base_evidence = contract.get_evidence("seed-old")
+    while len(contract.evidence) < 1_024:
+        contract.evidence.append(base_evidence)
+    base_history = contract.history[0]
+    while len(contract.history) < 8_192:
+        contract.history.append(base_history)
+    direct_vm.value = 1
+    assert contract.create_bounty("seed-bounty", "seed-claim") == "CREATED"
+    direct_vm.value = 0
+    base_bounty = contract.get_bounty("seed-bounty")
+    while len(contract.bounties) < 256:
+        contract.bounties.append(base_bounty)
+    base_edge = contract.get_evidence_edges("seed-claim")[0]
+    while len(contract.edges) < 512:
+        contract.edges.append(base_edge)
+
+    newcomer = address_type("0x00000000000000000000000000000000000000ff")
+    direct_vm.sender = newcomer
+    _create_claim(contract, "after-former-global-caps")
+    direct_vm.clear_mocks()
+    _mock_verification(direct_vm, "SUPPORTS")
+    contract.submit_evidence("new-user-old", "after-former-global-caps", URL, "SUPPORTS")
+    contract.verify_claim("after-former-global-caps", "new-user-old")
+    direct_vm.clear_mocks()
+    _mock_verification(direct_vm, "INSUFFICIENT", True, UPDATED_HTML, "EXPIRES")
+    contract.submit_evidence("new-user-new", "after-former-global-caps", URL, "EXPIRES", "RENDERED_WEB", "NONE", "new-user-old")
+    contract.verify_claim("after-former-global-caps", "new-user-new")
+    direct_vm.value = 1
+    assert contract.create_bounty("new-user-bounty", "after-former-global-caps") == "CREATED"
+    direct_vm.value = 0
+    assert contract.get_bounty("new-user-bounty").state == "OPEN"
+    assert len(contract.get_evidence_edges("after-former-global-caps")) == 1
+    assert len(contract.get_history("after-former-global-caps")) == 5
+    assert contract.get_status("after-former-global-caps") == "INSUFFICIENT"
+    passport = json.loads(contract.get_provenance_passport("after-former-global-caps"))
+    assert passport["status"] == "INSUFFICIENT"
+    direct_vm.warp("2026-02-01T00:00:01Z")
+    contract.claim_reward("new-user-bounty")
+    assert contract.get_bounty("new-user-bounty").state == "REFUNDED"
+
+
+def test_one_sponsor_cannot_consume_another_sponsors_bounty_quota(direct_vm, direct_deploy, monkeypatch):
+    contract = direct_deploy(CONTRACT)
+    _create_claim(contract)
+    address_type = type(contract.owner)
+    first_sponsor = address_type("0x00000000000000000000000000000000000000b1")
+    second_sponsor = address_type("0x00000000000000000000000000000000000000b2")
+    sent = []
+    monkeypatch.setattr(contract, "_send_gen", lambda recipient, amount: sent.append((recipient, int(amount))))
+    direct_vm.sender = first_sponsor
+    for index in range(8):
+        direct_vm.value = 1
+        assert contract.create_bounty("first-sponsor-%d" % index, "claim-1") == "CREATED"
+    direct_vm.value = 1
+    assert contract.create_bounty("first-sponsor-over-quota", "claim-1") == "REJECTED:SPONSOR_OPEN_BOUNTY_QUOTA"
+    assert len(sent) == 1 and sent[0][1] == 1
+    direct_vm.sender = second_sponsor
+    direct_vm.value = 1
+    assert contract.create_bounty("second-sponsor-independent", "claim-1") == "CREATED"
+    direct_vm.value = 0
+    assert contract.get_bounty("second-sponsor-independent").state == "OPEN"
+
+
+def test_status_passport_and_settlement_execute_at_maximum_claim_state(direct_vm, direct_deploy, monkeypatch):
+    direct_vm.warp("2026-01-01T00:00:00Z")
+    contract = direct_deploy(CONTRACT)
+    _create_claim(contract)
+    _mock_verification(direct_vm, "SUPPORTS")
+    _submit(contract, "old-support")
+    contract.verify_claim("claim-1", "old-support")
+    direct_vm.clear_mocks()
+    _mock_verification(direct_vm, "INSUFFICIENT", True, UPDATED_HTML, "EXPIRES")
+    contract.submit_evidence("expires-old", "claim-1", URL, "EXPIRES", "RENDERED_WEB", "NONE", "old-support")
+    contract.verify_claim("claim-1", "expires-old")
+    for index in range(126):
+        contract.submit_evidence("pending-%d" % index, "claim-1", URL, "SUPPORTS")
+    claim = contract.claims[contract.claim_index["claim-1"]]
+    assert int(claim.evidence_count) == 128
+
+    last_at = contract.evidence_index["pending-125"]
+    last = contract.evidence[last_at]
+    last.verification = "VERIFIED"
+    last.observed_relationship = "SUPPORTS"
+    last.observed_at = contract._now()
+    last.freshness = "FRESH"
+    last.observation_hash = "a" * 64
+    last.effective_active = True
+    contract.evidence[last_at] = last
+
+    edge = contract.get_evidence_edges("claim-1")[0]
+    for edge_position in range(1, 128):
+        edge_at = type(claim.edge_count)(len(contract.edges))
+        contract.edges.append(edge)
+        contract.claim_edge_index[contract._scoped_index_key("claim-1", "edge", edge_position)] = edge_at
+    claim.edge_count = type(claim.edge_count)(128)
+    contract.claims[contract.claim_index["claim-1"]] = claim
+
+    assert contract.get_status("claim-1") == "CONFIRMED"
+    passport = json.loads(contract.get_provenance_passport("claim-1"))
+    assert passport["status"] == "CONFIRMED"
+    assert passport["active_evidence_count"] == 127
+    assert len(contract.get_history("claim-1")) == 131
+    assert len(contract.get_evidence_edges("claim-1")) == 128
+
+    _fund_bounty(direct_vm, contract)
+    sent = []
+    monkeypatch.setattr(contract, "_send_gen", lambda recipient, amount: sent.append((recipient, int(amount))))
+    contract.claim_reward("bounty-1")
+    bounty = contract.get_bounty("bounty-1")
+    assert bounty.state == "PAID"
+    assert bounty.winning_evidence_id == last.evidence_id
+    assert len(sent) == 1 and sent[0][1] == 10**18
+
+
 def test_unsupported_relationship_rejected(direct_vm, direct_deploy):
     contract = direct_deploy(CONTRACT)
     _create_claim(contract)

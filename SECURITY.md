@@ -10,7 +10,7 @@ This is semantic provenance, not a source-authenticity protocol. It does not pro
 
 ## Deterministic evidence graph and claim policy
 
-Evidence is append-only and per-claim limited to 128 items. Graph edges are globally limited to 512 and per claim to 256. A graph edge can only target an older verified item. `SUPERSEDES` and `EXPIRES` deactivate that target; `RESTORES` reactivates it. Historical records remain queryable. Duplicate observations of an identical claim, URL, and artifact share a canonical evidence identity and cannot supersede themselves.
+Evidence is append-only and limited to 128 items per claim. A non-creator can submit at most 16 evidence records to a claim, and non-creators together can submit at most 32; this leaves at least 96 slots for the claim creator even if outside callers submit unverified spam. Graph edges are limited to 128 per claim and can only target an older verified item. `SUPERSEDES` and `EXPIRES` deactivate that target; `RESTORES` reactivates it. Historical records remain queryable. Duplicate observations of an identical claim, URL, and artifact share a canonical evidence identity and cannot supersede themselves.
 
 At read and settlement time, active non-stale findings are aggregated consistently. Fresh support and fresh contradiction yield `DISPUTED`; support-only yields `CONFIRMED`; contradiction-only yields `CONTRADICTED`. If decisive evidence exists only beyond seven days, the result is `STALE`; unavailable-only evidence is `UNAVAILABLE`; otherwise it is `INSUFFICIENT`. `FRESH` lasts 24 hours, `AGING` lasts through seven days. Evidence older than seven days does not decide current status.
 
@@ -20,7 +20,7 @@ The challenge entry point is deliberately narrow: it requires a verified support
 
 `create_bounty` accepts only the GEN value attached to that payable call. Invalid input returns a typed `REJECTED:<reason>` outcome normally and issues a refund transfer request; it does not rely on revert rollback. Studionet acceptance of rejected-call refunds and EVM transfer delivery remain live gates until measured with sender and contract balances. For a confirmed claim, permissionless settlement pays the submitter of the first active, non-stale rendered supporting evidence item in append order; the settlement caller never becomes beneficiary. Contradicted, unavailable, stale, and text-only outcomes cannot pay a bounty. Disputed, insufficient, or text-only claims stay open for up to 30 days, after which anyone can trigger a sponsor refund. No automatic timer executes on-chain, so a caller must invoke settlement after the deadline.
 
-Before transfer, the contract sets amount to zero, marks the bounty `PAID` or `REFUNDED`, records the recipient and winning evidence, and appends history. All GEN transfers go through `_send_gen`. Global and per-claim history limits reserve a terminal history slot for every open bounty. Repeated settlement fails because the state is no longer `OPEN`.
+Before transfer, the contract sets amount to zero, marks the bounty `PAID` or `REFUNDED`, and records the recipient and winning evidence in the bounty record. All GEN transfers go through `_send_gen`. Each sponsor may have up to eight open bounties per claim; this quota is independent for every sponsor and claim. Bounty lifecycle state is read from `get_bounty`, so bounty creation and settlement do not consume claim-history capacity. Repeated settlement fails because the state is no longer `OPEN`.
 
 | Bounty condition | Who can trigger | Recipient | Terminal result |
 | --- | --- | --- | --- |
@@ -31,8 +31,10 @@ Before transfer, the contract sets amount to zero, marks the bounty `PAID` or `R
 
 The fixed 30-day policy has no custom per-bounty deadline or sponsor cancellation method. The only supported financial asset is native GEN.
 
-## Bounded state
+## Bounded and isolated state
 
-The contract caps claims at 256, evidence globally at 1,024, evidence per claim at 128, graph edges globally at 512 and per claim at 256, history globally at 8,192 and per claim at 256, and bounties at 256. Creating ordinary history is prevented from consuming slots reserved for open-bounty terminal settlement. These limits bound storage growth but large deployments should still measure worst-case view and write execution cost on the target network.
+Claims are limited to 64 per creator address. Evidence is limited to 128 per claim; outside submitters share 32 of those slots, with a maximum of 16 from any one address, so the claim creator retains at least 96 slots. Graph edges are limited to 128 per claim. Claim history is limited to 260 entries, enough for claim creation, submission and verification of all 128 evidence records, and three challenges. A sponsor can have up to eight open bounties per claim. These limits are scoped to a creator, claim, or sponsor/claim pair; there are no global lifetime caps that let one account consume capacity for unrelated users.
+
+Evidence, history, edge, claim, and bounty lookup remains direct or claim-indexed. Status, freshness, and settlement inspect at most 128 evidence records; passports inspect at most 128 evidence records and 128 edges; history reads return at most 260 entries. Global append-only storage grows as users create claims and records, but these paths do not scan unrelated users' state. Creator and submitter quotas are address-scoped, not sybil-resistant: a user controlling multiple wallets has separate quotas. GenLayer's execution and storage limits and transaction costs still apply to total deployment growth.
 
 No private keys, wallet passwords, mnemonics, or signing material belong in the repository or transaction evidence.

@@ -13,15 +13,14 @@ from genlayer import *
 MAX_TEXT = 4_096
 MAX_SEMANTIC_CONTEXT = 16_384
 MAX_URL = 2_048
-MAX_CLAIMS = 256
-MAX_EVIDENCE_TOTAL = 1_024
-MAX_HISTORY_TOTAL = 8_192
-MAX_BOUNTIES = 256
-MAX_GRAPH_EDGES_TOTAL = 512
+MAX_CLAIMS_PER_CREATOR = 64
 MAX_EVIDENCE_PER_CLAIM = 128
-MAX_HISTORY_PER_CLAIM = 256
-MAX_GRAPH_EDGES_PER_CLAIM = 256
+MAX_EXTERNAL_EVIDENCE_PER_CLAIM = 32
+MAX_EVIDENCE_PER_EXTERNAL_SUBMITTER = 16
+MAX_HISTORY_PER_CLAIM = 260  # 1 claim + 128 submit/verify pairs + 3 challenges
+MAX_GRAPH_EDGES_PER_CLAIM = 128
 MAX_CHALLENGES_PER_CLAIM = 3
+MAX_OPEN_BOUNTIES_PER_SPONSOR_CLAIM = 8
 FRESH_SECONDS = 86_400
 AGING_SECONDS = 604_800
 BOUNTY_TIMEOUT_SECONDS = 2_592_000
@@ -43,6 +42,8 @@ class Claim:
     evidence_count: u32
     last_verified_at: u64
     challenge_count: u32
+    history_count: u32
+    edge_count: u32
 
 
 @allow_storage
@@ -69,6 +70,7 @@ class Evidence:
     freshness: str
     target_evidence_id: str
     graph_relationship: str
+    effective_active: bool
 
 
 @allow_storage
@@ -127,10 +129,14 @@ class ProvenanceEngine(gl.Contract):
     bounties: DynArray[Bounty]
     edges: DynArray[EvidenceEdge]
     claim_index: TreeMap[str, u32]
-    claim_history_count: TreeMap[str, u32]
+    claims_by_creator: TreeMap[str, u32]
     evidence_index: TreeMap[str, u32]
     bounty_index: TreeMap[str, u32]
     used_ids: TreeMap[str, bool]
+    open_bounties_by_sponsor_claim: TreeMap[str, u32]
+    claim_evidence_index: TreeMap[str, u32]
+    claim_history_index: TreeMap[str, u32]
+    claim_edge_index: TreeMap[str, u32]
 
     def __init__(self):
         self.owner = gl.message.sender_address
@@ -200,6 +206,11 @@ class ProvenanceEngine(gl.Contract):
             self._fail("unknown evidence")
         return self.evidence_index[evidence_id]
 
+    def _scoped_index_key(self, claim_id: str, kind: str, position: int) -> str:
+        return hashlib.sha256(json.dumps(
+            [claim_id, kind, position], separators=(",", ":")
+        ).encode()).hexdigest()
+
     def _authority_key(self, evidence: Evidence) -> str:
         # Treat the submitted HTTPS host as the publisher authority boundary.
         return self._authority_key_from_url(evidence.source_url)
@@ -208,24 +219,22 @@ class ProvenanceEngine(gl.Contract):
         return source_url[8:].split("/", 1)[0].split("?", 1)[0].split("#", 1)[0].lower()
 
     def _append_history(self, claim_id: str, event_type: str, detail: str, receipt: str) -> None:
-        per_claim = int(self.claim_history_count[claim_id]) if claim_id in self.claim_history_count else 0
-        terminal = event_type in ("BOUNTY_PAID", "BOUNTY_REFUNDED")
-        open_bounties = 0
-        global_open_bounties = 0
-        for bounty in self.bounties:
-            if bounty.state == "OPEN":
-                global_open_bounties += 1
-                if bounty.claim_id == claim_id:
-                    open_bounties += 1
-        if (per_claim + open_bounties >= MAX_HISTORY_PER_CLAIM and not terminal
-                or per_claim >= MAX_HISTORY_PER_CLAIM or len(self.history) >= MAX_HISTORY_TOTAL
-                or (len(self.history) + global_open_bounties >= MAX_HISTORY_TOTAL and not terminal)):
+        claim_at = self._claim_at(claim_id)
+        claim = self.claims[claim_at]
+        per_claim = int(claim.history_count)
+        if per_claim >= MAX_HISTORY_PER_CLAIM:
             self._fail("history capacity reached")
+        history_at = u32(len(self.history))
+        self.claim_history_index[self._scoped_index_key(claim_id, "history", per_claim)] = history_at
         self.history.append(HistoryEntry(
             claim_id=claim_id, event_type=event_type, detail=detail,
             actor=gl.message.sender_address, recorded_at=self._now(), receipt=receipt,
         ))
-        self.claim_history_count[claim_id] = u32(per_claim + 1)
+        claim.history_count = u32(per_claim + 1)
+        self.claims[claim_at] = claim
+
+    def _bounty_scope_key(self, claim_id: str, sponsor: Address) -> str:
+        return hashlib.sha256((claim_id + "|" + str(sponsor).lower()).encode()).hexdigest()
 
     def _receipt(self, *parts: str) -> str:
         return hashlib.sha256("|".join(parts).encode()).hexdigest()
@@ -252,14 +261,9 @@ class ProvenanceEngine(gl.Contract):
         return " ".join(visible_text.split()).lower()
 
     def _evidence_is_active(self, evidence_id: str) -> bool:
-        active = True
-        for edge in self.edges:
-            if edge.target_evidence_id == evidence_id and edge.active:
-                if edge.relationship in ("SUPERSEDES", "EXPIRES"):
-                    active = False
-                elif edge.relationship == "RESTORES":
-                    active = True
-        return active
+        if evidence_id not in self.evidence_index:
+            return False
+        return self.evidence[self.evidence_index[evidence_id]].effective_active
 
     def _derived_status(self, claim_id: str) -> str:
         has_support = False
@@ -267,8 +271,13 @@ class ProvenanceEngine(gl.Contract):
         has_unavailable = False
         has_text_only = False
         saw_stale = False
-        for item in self.evidence:
-            if item.claim_id != claim_id or not self._evidence_is_active(item.evidence_id):
+        claim = self.claims[self._claim_at(claim_id)]
+        for evidence_position in range(int(claim.evidence_count)):
+            evidence_at = self.claim_evidence_index[
+                self._scoped_index_key(claim_id, "evidence", evidence_position)
+            ]
+            item = self.evidence[evidence_at]
+            if not self._evidence_is_active(item.evidence_id):
                 continue
             if item.observed_at != u64(0):
                 item_freshness = self._freshness(item.observed_at)
@@ -313,8 +322,10 @@ class ProvenanceEngine(gl.Contract):
         self._validate_text(statement, "statement", MAX_TEXT)
         if claim_id in self.used_ids:
             self._fail("claim_id already used")
-        if len(self.claims) >= MAX_CLAIMS:
-            self._fail("claim capacity reached")
+        creator_key = str(gl.message.sender_address).lower()
+        creator_count = int(self.claims_by_creator[creator_key]) if creator_key in self.claims_by_creator else 0
+        if creator_count >= MAX_CLAIMS_PER_CREATOR:
+            self._fail("creator claim quota reached")
         now = self._now()
         self.claim_index[claim_id] = u32(len(self.claims))
         self.used_ids[claim_id] = True
@@ -322,7 +333,9 @@ class ProvenanceEngine(gl.Contract):
             claim_id=claim_id, statement=statement, creator=gl.message.sender_address,
             created_at=now, status="INSUFFICIENT", version=u32(1), evidence_count=u32(0),
             last_verified_at=u64(0), challenge_count=u32(0),
+            history_count=u32(0), edge_count=u32(0),
         ))
+        self.claims_by_creator[creator_key] = u32(creator_count + 1)
         self._append_history(claim_id, "CLAIM_CREATED", "immutable claim registered", self._receipt(claim_id, statement))
 
     @gl.public.write
@@ -368,19 +381,39 @@ class ProvenanceEngine(gl.Contract):
         claim = self.claims[claim_at]
         if int(claim.evidence_count) >= MAX_EVIDENCE_PER_CLAIM:
             self._fail("evidence capacity reached")
-        if len(self.evidence) >= MAX_EVIDENCE_TOTAL:
-            self._fail("global evidence capacity reached")
+        submitter = gl.message.sender_address
+        if submitter != claim.creator:
+            submitter_count = 0
+            external_count = 0
+            for evidence_position in range(int(claim.evidence_count)):
+                evidence_at = self.claim_evidence_index[
+                    self._scoped_index_key(claim_id, "evidence", evidence_position)
+                ]
+                existing = self.evidence[evidence_at]
+                if existing.submitter != claim.creator:
+                    external_count += 1
+                    if existing.submitter == submitter:
+                        submitter_count += 1
+            if external_count >= MAX_EXTERNAL_EVIDENCE_PER_CLAIM:
+                self._fail("external evidence quota reached")
+            if submitter_count >= MAX_EVIDENCE_PER_EXTERNAL_SUBMITTER:
+                self._fail("submitter evidence quota reached")
         observation_hash = self._receipt(claim_id, source_url, evidence_class, expected_digest, relationship)
         self.evidence_index[evidence_id] = u32(len(self.evidence))
         self.used_ids[evidence_id] = True
+        evidence_at = u32(len(self.evidence))
+        self.claim_evidence_index[self._scoped_index_key(
+            claim_id, "evidence", int(claim.evidence_count)
+        )] = evidence_at
         self.evidence.append(Evidence(
             evidence_id=evidence_id, artifact_id="", canonical_content="", claim_id=claim_id, source_url=source_url,
             evidence_class=evidence_class, expected_digest=expected_digest,
             retrieval_type=evidence_class, content_hash="", render_hash="",
-            submitted_at=self._now(), relationship=relationship, submitter=gl.message.sender_address,
+            submitted_at=self._now(), relationship=relationship, submitter=submitter,
             verification="PENDING", observation_hash=observation_hash, client_alias=evidence_id,
             observed_relationship="PENDING", observed_at=u64(0), freshness="UNKNOWN",
             target_evidence_id=target_evidence_id, graph_relationship="NONE",
+            effective_active=True,
         ))
         claim.evidence_count = claim.evidence_count + u32(1)
         claim.version = claim.version + u32(1)
@@ -546,13 +579,7 @@ Source text (complete canonical artifact): %s""" % (
                 self._fail("graph target has no historical artifact content")
             if result["evidence_id"] == target.artifact_id:
                 self._fail("graph edge cannot target identical evidence identity")
-            if len(self.edges) >= MAX_GRAPH_EDGES_TOTAL:
-                self._fail("evidence graph capacity reached")
-            claim_edge_count = 0
-            for existing_edge in self.edges:
-                if existing_edge.claim_id == claim_id:
-                    claim_edge_count += 1
-            if claim_edge_count >= MAX_GRAPH_EDGES_PER_CLAIM:
+            if int(claim.edge_count) >= MAX_GRAPH_EDGES_PER_CLAIM:
                 self._fail("claim graph capacity reached")
             if int(target_at) >= int(evidence_at):
                 self._fail("graph edge must reference older evidence")
@@ -560,6 +587,13 @@ Source text (complete canonical artifact): %s""" % (
             evidence.verification = "PENDING"
             evidence.graph_relationship = graph_relationship
             evidence.observed_relationship = decision
+            target.effective_active = graph_relationship == "RESTORES"
+            self.evidence[target_at] = target
+            edge_at = u32(len(self.edges))
+            self.claim_edge_index[self._scoped_index_key(
+                claim_id, "edge", int(claim.edge_count)
+            )] = edge_at
+            claim.edge_count = claim.edge_count + u32(1)
             self.edges.append(EvidenceEdge(
                 claim_id=claim_id, source_evidence_id="", target_evidence_id=target.evidence_id,
                 relationship=graph_relationship, created_at=self._now(), active=True,
@@ -587,10 +621,13 @@ Source text (complete canonical artifact): %s""" % (
             evidence.canonical_content = result["canonical_content"]
             evidence.observed_at = self._now()
             evidence.freshness = "FRESH"
-        if graph_relationship != "NONE" and result["sufficient"] and len(self.edges) > 0:
-            edge = self.edges[len(self.edges) - 1]
+        if graph_relationship != "NONE" and result["sufficient"]:
+            latest_edge_at = self.claim_edge_index[self._scoped_index_key(
+                claim_id, "edge", int(claim.edge_count) - 1
+            )]
+            edge = self.edges[latest_edge_at]
             edge.source_evidence_id = evidence.evidence_id
-            self.edges[len(self.edges) - 1] = edge
+            self.edges[latest_edge_at] = edge
         claim.status = self._derived_status(claim_id)
         claim.last_verified_at = self._now()
         claim.version = claim.version + u32(1)
@@ -620,13 +657,21 @@ Source text (complete canonical artifact): %s""" % (
         if evidence.verification not in ("VERIFIED", "CONTRADICTED"):
             self._fail("challenge requires finalized contrary evidence")
         has_opposite = False
-        for item in self.evidence:
-            if item.claim_id == claim_id and item.evidence_id != evidence.evidence_id:
+        for evidence_position in range(int(claim.evidence_count)):
+            other_at = self.claim_evidence_index[
+                self._scoped_index_key(claim_id, "evidence", evidence_position)
+            ]
+            item = self.evidence[other_at]
+            if item.evidence_id != evidence.evidence_id:
                 if item.verification in ("VERIFIED", "CONTRADICTED") and item.verification != evidence.verification:
                     has_opposite = True
         if not has_opposite:
             self._fail("challenge requires a verified conflicting finding")
-        for entry in self.history:
+        for history_position in range(int(claim.history_count)):
+            history_at = self.claim_history_index[
+                self._scoped_index_key(claim_id, "history", history_position)
+            ]
+            entry = self.history[history_at]
             if (entry.claim_id == claim_id and entry.event_type == "CHALLENGED"
                     and entry.detail.startswith(evidence_id + ":")):
                 self._fail("evidence already challenged")
@@ -648,22 +693,11 @@ Source text (complete canonical artifact): %s""" % (
             rejection = "DUPLICATE_BOUNTY_ID"
         elif value == u256(0):
             rejection = "ZERO_VALUE"
-        elif len(self.bounties) >= MAX_BOUNTIES:
-            rejection = "BOUNTY_CAPACITY"
         if not rejection:
-            claim_history = int(self.claim_history_count[claim_id]) if claim_id in self.claim_history_count else 0
-            open_bounties = 0
-            global_open_bounties = 0
-            for existing in self.bounties:
-                if existing.state == "OPEN":
-                    global_open_bounties += 1
-                    if existing.claim_id == claim_id:
-                        open_bounties += 1
-            if (claim_history + open_bounties + 1 >= MAX_HISTORY_PER_CLAIM
-                    or claim_history >= MAX_HISTORY_PER_CLAIM
-                    or len(self.history) >= MAX_HISTORY_TOTAL
-                    or len(self.history) + global_open_bounties + 1 >= MAX_HISTORY_TOTAL):
-                rejection = "HISTORY_CAPACITY"
+            scope_key = self._bounty_scope_key(claim_id, gl.message.sender_address)
+            open_count = int(self.open_bounties_by_sponsor_claim[scope_key]) if scope_key in self.open_bounties_by_sponsor_claim else 0
+            if open_count >= MAX_OPEN_BOUNTIES_PER_SPONSOR_CLAIM:
+                rejection = "SPONSOR_OPEN_BOUNTY_QUOTA"
         if rejection:
             if value > u256(0):
                 self._send_gen(gl.message.sender_address, value)
@@ -675,7 +709,7 @@ Source text (complete canonical artifact): %s""" % (
             amount=gl.message.value, state="OPEN", winner=Address("0x0000000000000000000000000000000000000000"),
             created_at=self._now(), settled_at=u64(0), winning_evidence_id="",
         ))
-        self._append_history(claim_id, "BOUNTY_CREATED", bounty_id, self._receipt(bounty_id, str(gl.message.value)))
+        self.open_bounties_by_sponsor_claim[scope_key] = u32(open_count + 1)
         return "CREATED"
 
     @gl.public.write
@@ -691,8 +725,12 @@ Source text (complete canonical artifact): %s""" % (
         winning_evidence_id = ""
         if status == "CONFIRMED":
             recipient = ZERO_ADDRESS
-            for item in self.evidence:
-                if item.claim_id == bounty.claim_id and item.verification == "VERIFIED":
+            for evidence_position in range(int(claim.evidence_count)):
+                evidence_at = self.claim_evidence_index[
+                    self._scoped_index_key(bounty.claim_id, "evidence", evidence_position)
+                ]
+                item = self.evidence[evidence_at]
+                if item.verification == "VERIFIED":
                     if (self._evidence_is_active(item.evidence_id) and item.observed_at != u64(0)
                             and self._freshness(item.observed_at) != "STALE"):
                         recipient = item.submitter
@@ -715,7 +753,11 @@ Source text (complete canonical artifact): %s""" % (
         bounty.settled_at = self._now()
         bounty.winning_evidence_id = winning_evidence_id
         self.bounties[at] = bounty
-        self._append_history(bounty.claim_id, "BOUNTY_" + payout_state, bounty_id, self._receipt(bounty_id, payout_state))
+        scope_key = self._bounty_scope_key(bounty.claim_id, bounty.sponsor)
+        open_count = int(self.open_bounties_by_sponsor_claim[scope_key]) if scope_key in self.open_bounties_by_sponsor_claim else 0
+        if open_count == 0:
+            self._fail("bounty sponsor index underflow")
+        self.open_bounties_by_sponsor_claim[scope_key] = u32(open_count - 1)
         self._send_gen(recipient, amount)
 
     def _send_gen(self, recipient: Address, amount: u256) -> None:
@@ -737,18 +779,24 @@ Source text (complete canonical artifact): %s""" % (
     def get_history(self, claim_id: str) -> list[HistoryEntry]:
         self._claim_at(claim_id)
         result: list[HistoryEntry] = []
-        for entry in self.history:
-            if entry.claim_id == claim_id:
-                result.append(entry)
+        claim = self.claims[self._claim_at(claim_id)]
+        for history_position in range(int(claim.history_count)):
+            history_at = self.claim_history_index[
+                self._scoped_index_key(claim_id, "history", history_position)
+            ]
+            result.append(self.history[history_at])
         return result
 
     @gl.public.view
     def get_evidence_edges(self, claim_id: str) -> list[EvidenceEdge]:
         self._claim_at(claim_id)
         result: list[EvidenceEdge] = []
-        for edge in self.edges:
-            if edge.claim_id == claim_id:
-                result.append(edge)
+        claim = self.claims[self._claim_at(claim_id)]
+        for edge_position in range(int(claim.edge_count)):
+            edge_at = self.claim_edge_index[
+                self._scoped_index_key(claim_id, "edge", edge_position)
+            ]
+            result.append(self.edges[edge_at])
         return result
 
     @gl.public.view
@@ -761,8 +809,13 @@ Source text (complete canonical artifact): %s""" % (
     def get_freshness(self, claim_id: str) -> str:
         self._claim_at(claim_id)
         latest = u64(0)
-        for item in self.evidence:
-            if item.claim_id == claim_id and self._evidence_is_active(item.evidence_id):
+        claim = self.claims[self._claim_at(claim_id)]
+        for evidence_position in range(int(claim.evidence_count)):
+            evidence_at = self.claim_evidence_index[
+                self._scoped_index_key(claim_id, "evidence", evidence_position)
+            ]
+            item = self.evidence[evidence_at]
+            if self._evidence_is_active(item.evidence_id):
                 if int(item.observed_at) > int(latest):
                     latest = item.observed_at
         if latest == u64(0):
@@ -787,8 +840,12 @@ Source text (complete canonical artifact): %s""" % (
         seen_active_ids: list[str] = []
         seen_support_ids: list[str] = []
         seen_contradiction_ids: list[str] = []
-        for item in self.evidence:
-            if item.claim_id != claim_id or not self._evidence_is_active(item.evidence_id):
+        for evidence_position in range(int(claim.evidence_count)):
+            evidence_at = self.claim_evidence_index[
+                self._scoped_index_key(claim_id, "evidence", evidence_position)
+            ]
+            item = self.evidence[evidence_at]
+            if not self._evidence_is_active(item.evidence_id):
                 continue
             if item.evidence_id not in seen_active_ids:
                 seen_active_ids.append(item.evidence_id)
@@ -810,10 +867,13 @@ Source text (complete canonical artifact): %s""" % (
                 consensus_digest = self._receipt(consensus_digest, item.evidence_id, item.render_hash,
                                                  item.content_hash, item.observed_relationship)
         graph_digest = ""
-        for edge in self.edges:
-            if edge.claim_id == claim_id:
-                graph_digest = self._receipt(graph_digest, edge.source_evidence_id,
-                                             edge.target_evidence_id, edge.relationship)
+        for edge_position in range(int(claim.edge_count)):
+            edge_at = self.claim_edge_index[
+                self._scoped_index_key(claim_id, "edge", edge_position)
+            ]
+            edge = self.edges[edge_at]
+            graph_digest = self._receipt(graph_digest, edge.source_evidence_id,
+                                         edge.target_evidence_id, edge.relationship)
         claim_hash = hashlib.sha256(json.dumps(
             [claim.claim_id, claim.statement], separators=(",", ":")
         ).encode()).hexdigest()

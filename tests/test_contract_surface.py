@@ -68,6 +68,14 @@ def test_claim_status_is_derived_and_history_graph_are_bounded():
     assert "def _derived_status" in SOURCE
     assert 'return "DISPUTED"' in SOURCE
     assert re.search(r"MAX_EVIDENCE_PER_CLAIM\s*=\s*128", SOURCE)
-    assert re.search(r"MAX_GRAPH_EDGES_PER_CLAIM\s*=\s*256", SOURCE)
+    assert re.search(r"MAX_GRAPH_EDGES_PER_CLAIM\s*=\s*128", SOURCE)
+    assert re.search(r"MAX_CLAIMS_PER_CREATOR\s*=\s*64", SOURCE)
+    assert re.search(r"MAX_EXTERNAL_EVIDENCE_PER_CLAIM\s*=\s*32", SOURCE)
+    assert re.search(r"MAX_EVIDENCE_PER_EXTERNAL_SUBMITTER\s*=\s*16", SOURCE)
+    assert "MAX_CLAIMS =" not in SOURCE
+    assert "MAX_EVIDENCE_TOTAL =" not in SOURCE
+    assert "MAX_HISTORY_TOTAL =" not in SOURCE
+    assert "MAX_BOUNTIES =" not in SOURCE
+    assert "MAX_GRAPH_EDGES_TOTAL =" not in SOURCE
     assert "_evidence_is_active" in SOURCE
     assert "_validate_url(source_url)" in SOURCE
